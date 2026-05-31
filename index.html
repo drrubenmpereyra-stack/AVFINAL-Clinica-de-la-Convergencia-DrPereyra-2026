@@ -1258,139 +1258,6 @@ window.guardarAsistencia = function() {
 };
 
 
-
-
-
-
-window.vPagosAdmin = function() {
-    const v = document.getElementById('main-view');
-    v.style.display = 'block';
-
-    const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
-    const alumnos = db.participantes || [];
-
-    v.innerHTML = `
-        <div style="padding: 30px; border: 4px solid #c5a059; border-radius: 10px; color: #0a1f44; background: #fff; font-family: sans-serif;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h3>💰 Gestión de Tesorería: ADMINISTRACIÓN</h3>
-                <small style="color: #64748b;">* Los cambios solo impactarán al alumno tras presionar "Exportar"</small>
-            </div>
-            
-            <div class="row mb-4">
-                <div class="col-md-4">
-                    <label>Periodo (Mes):</label>
-                    <select id="pagos-mes" class="form-control">
-                        ${meses.map(m => `<option value="${m}">${m}</option>`).join('')}
-                    </select>
-                </div>
-            </div>
-
-            <table class="table table-hover">
-                <thead style="background-color: #0a1f44; color: #c5a059;">
-                    <tr>
-                        <th>Estudiante</th>
-                        <th>Estado</th>
-                        <th>Medio</th>
-                        <th>Monto</th>
-                        <th>Obs.</th>
-                        <th>Acción</th>
-                    </tr>
-                </thead>
-                <tbody id="body-pagos-admin">
-                    ${alumnos.map(p => `
-                        <tr id="row-pagos-${p.dni}">
-                            <td>${p.apellido}, ${p.nombre}</td>
-                            <td>
-                                <select class="form-control estado-pago" data-dni="${p.dni}">
-                                    <option value="Pendiente">Pendiente</option>
-                                    <option value="Pagado">Pagado</option>
-                                    <option value="Bonificado">Bonificado</option>
-                                </select>
-                            </td>
-                            <td>
-                                <select class="form-control medio-pago">
-                                    <option value="Efectivo">Efectivo</option>
-                                    <option value="Transferencia">Transferencia</option>
-                                </select>
-                            </td>
-                            <td><input type="number" class="form-control monto-pago" placeholder="$" value="0"></td>
-                            <td><input type="text" class="form-control obs-pago" placeholder="..."></td>
-                            <td>
-                                <button class="btn btn-sm btn-outline-warning" onclick="alert('Edición habilitada para: ${p.apellido}')" title="Modificar registro">✏️</button>
-                            </td>
-                        </tr>
-                    `).join('')}
-                </tbody>
-            </table>
-            
-            <div class="mt-4" style="border-top: 1px solid #ddd; padding-top: 20px;">
-                <button class="btn" style="background-color: #0a1f44; color: #c5a059;" onclick="guardarPagos()">Guardar Cambios (Admin)</button>
-                <button class="btn" style="background-color: #c5a059; color: #fff;" onclick="exportarPagosAAlumnos()">Exportar/Actualizar a Alumno</button>
-            </div>
-        </div>`;
-};
-
-window.guardarPagos = function() {
-    // Aquí se actualizaría el objeto en memoria/localStorage
-    alert('Cambios guardados localmente. Los alumnos aún no ven esta actualización.');
-};
-
-window.exportarPagosAAlumnos = function() {
-    // Esta función será el "Push" de datos hacia las vistas de alumnos
-    alert('Sincronización completada: Los datos han sido actualizados en los perfiles de los alumnos.');
-    console.log("Datos de pagos exportados y vinculados.");
-};
-window.vPagosAlumnoView = function() {
-    const v = document.getElementById('main-view');
-    v.style.display = 'block';
-
-    // Meses para mostrar
-    const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
-
-    // Datos simulados (esto se conectará luego con la base de datos de pagos)
-    const misPagos = {
-        "Enero": { estado: "Pagado", medio: "Transferencia", monto: 50000 },
-        "Febrero": { estado: "Pagado", medio: "Efectivo", monto: 50000 },
-        "Marzo": { estado: "Bonificado", medio: "-", monto: 0 },
-        "Abril": { estado: "Pendiente", medio: "-", monto: 0 }
-    };
-
-    v.innerHTML = `
-        <div style="padding: 30px; background-color: #fff; border: 4px solid #c5a059; border-radius: 10px; color: #0a1f44; font-family: sans-serif;">
-            <div style="border-bottom: 3px solid #0a1f44; margin-bottom: 20px;">
-                <h3 style="color: #0a1f44; text-transform: uppercase;">Estado de Cuenta: Pagos y Aranceles</h3>
-                <p><strong>Estudiante:</strong> ${sesion.nombre || '...'}</p>
-            </div>
-
-            <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin-bottom: 25px; border: 1px solid #c5a059;">
-                <h4 style="margin-top:0;">Resumen Financiero</h4>
-                <p>Tu estado actual: <span style="font-weight:bold; color:#0a1f44;">Al día con los meses registrados.</span></p>
-            </div>
-
-            <table class="table table-striped">
-                <thead style="background-color: #0a1f44; color: #c5a059;">
-                    <tr><th>Mes</th><th>Estado</th><th>Medio de Pago</th><th>Monto</th></tr>
-                </thead>
-                <tbody>
-                    ${meses.map(m => {
-                        const info = misPagos[m] || { estado: "Pendiente", medio: "-", monto: "-" };
-                        const colorEstado = info.estado === "Pagado" ? "green" : (info.estado === "Pendiente" ? "red" : "#c5a059");
-                        return `
-                        <tr>
-                            <td>${m}</td>
-                            <td style="color: ${colorEstado}; font-weight: bold;">${info.estado}</td>
-                            <td>${info.medio}</td>
-                            <td>${info.monto > 0 ? '$' + info.monto : '-'}</td>
-                        </tr>`;
-                    }).join('')}
-                </tbody>
-            </table>
-            
-            <p style="font-size: 0.8em; margin-top: 20px; color: #64748b;">
-                * Si observas alguna discrepancia en tu registro, por favor solicita la revisión administrativa.
-            </p>
-        </div>`;
-};
 window.abrirTestAlumno = function(index) {
     const storedDb = localStorage.getItem('DB_CLINICA');
     const localDb = storedDb ? JSON.parse(storedDb) : (typeof db !== 'undefined' ? db : {});
@@ -2385,6 +2252,153 @@ window.cargarBackup = function(event) {
         }
     };
     reader.readAsText(file);
+};
+// --- LÓGICA DE PAGOS (LocalStore) ---
+const obtenerPagos = () => JSON.parse(localStorage.getItem('pagos_aula_virtual')) || [];
+
+const guardarPago = (nuevoPago) => {
+    const lista = obtenerPagos();
+    // Formato: { nombre, encuentro, monto, medio, visado: false, id: timestamp }
+    lista.push({ ...nuevoPago, id: Date.now(), visado: false });
+    localStorage.setItem('pagos_aula_virtual', JSON.stringify(lista));
+};
+
+const alternarVisado = (id) => {
+    let lista = obtenerPagos();
+    const p = lista.find(item => item.id === id);
+    if(p) {
+        p.visado = !p.visado;
+        localStorage.setItem('pagos_aula_virtual', JSON.stringify(lista));
+        vPagosAdmin(); // Refresca la vista
+    }
+};
+window.vPagosAdmin = function() {
+    const v = document.getElementById('main-view');
+    const pagos = obtenerPagos();
+    
+    // Lista fija, sin depender de ninguna base de datos
+    const alumnos = [
+        "RIOS GRACIELA",
+        "SCHWAB GISELA",
+        "STEFANINI BENZO ROMINA",
+        "RODRIGUEZ RAMIRO",
+        "CAON FEDERICO",
+        "PRAVAZ EMILIA"
+    ];
+    
+    const encuentros = [
+        "Encuentro 1: Cartografía de la Intersubjetividad",
+        "Encuentro 2: La Memoria Traumática y el Aposteriori",
+        "Encuentro 3: Circuitos de Recompensa y Patologías del Deseo",
+        "Encuentro 4: El Marcador Somático en la Transferencia",
+        "Encuentro 5: Neurobiología de la Repetición",
+        "Encuentro 6: Plasticidad Simbólica y Sináptica",
+        "Encuentro 7: Arquitectura del Sueño y Función Alucinatoria",
+        "Encuentro 8: El Ello Somático y Trastornos Psicosomáticos",
+        "Encuentro 9: Focalización en Estructuras Límbicas",
+        "Encuentro 10: Ética de la Singularidad en la Era Tecnológica"
+    ];
+
+    let html = `<h3>💳 Gestión de Pagos (Admin)</h3>
+    <div class="card p-3 mb-4">
+        <div class="row">
+            <div class="col-md-3">
+                <select id="p-nom" class="form-select">
+                    ${alumnos.map(a => `<option value="${a}">${a}</option>`).join('')}
+                    <option value="OTRO">OTRO (Escribir)</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <select id="p-enc" class="form-select">
+                    ${encuentros.map(e => `<option value="${e}">${e}</option>`).join('')}
+                </select>
+            </div>
+            <div class="col-md-1">
+                <input type="number" id="p-mon" placeholder="$" class="form-control">
+            </div>
+            <div class="col-md-2">
+                <select id="p-med" class="form-select">
+                    <option>Efectivo</option><option>Transferencia</option><option>Bonificado</option><option>Beca</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-primary w-100" onclick="agregarPago()">Registrar</button>
+            </div>
+        </div>
+    </div>
+    <table class="table table-hover">
+        <thead><tr><th>Estudiante</th><th>Encuentro</th><th>Monto</th><th>Medio</th><th>Visado</th><th>Acción</th></tr></thead>
+        <tbody>
+            ${pagos.map(p => `<tr>
+                <td>${p.nombre}</td><td>${p.encuentro}</td><td>$${p.monto}</td><td>${p.medio}</td>
+                <td><input type="checkbox" ${p.visado ? 'checked' : ''} onchange="alternarVisado(${p.id})"></td>
+                <td><button class="btn btn-sm btn-danger" onclick="eliminarPago(${p.id})">🗑️</button></td>
+            </tr>`).join('')}
+        </tbody>
+    </table>`;
+    v.innerHTML = html;
+};
+
+window.agregarPago = function() {
+    let nombre = document.getElementById('p-nom').value;
+    if(nombre === "OTRO") nombre = prompt("Ingrese Apellido y Nombre:");
+    
+    guardarPago({
+        nombre: nombre,
+        encuentro: document.getElementById('p-enc').value,
+        monto: document.getElementById('p-mon').value,
+        medio: document.getElementById('p-med').value
+    });
+    vPagosAdmin();
+};
+
+// Función para manejar el "Agregar nuevo"
+window.verificarNuevoAlumno = function(select) {
+    if (select.value === "AGREGAR") {
+        const nuevoNombre = prompt("Ingresa Apellido y Nombre del estudiante:");
+        if (nuevoNombre) {
+            // Guardamos en tu base de datos db
+            db.participantes.push({ nombre: nuevoNombre });
+            // Actualizamos el backup automático
+            localStorage.setItem('backup_automatico_completo', JSON.stringify(db));
+            vPagosAdmin(); // Recarga la vista para mostrar el nuevo nombre
+        } else {
+            select.value = ""; // Resetea si cancela
+        }
+    }
+};
+
+window.agregarPago = function() {
+    guardarPago({
+        nombre: document.getElementById('p-nom').value,
+        encuentro: document.getElementById('p-enc').value,
+        monto: document.getElementById('p-mon').value,
+        medio: document.getElementById('p-med').value
+    });
+    vPagosAdmin();
+};
+window.vPagosAlumnoView = function() {
+    const v = document.getElementById('main-view');
+    const pagos = obtenerPagos().filter(p => p.visado === true);
+    
+    let html = `<h3>💰 Mis Pagos Efectuados</h3>
+    <table class="table table-bordered">
+        <thead><tr><th>Encuentro</th><th>Monto</th><th>Medio</th><th>Estado</th></tr></thead>
+        <tbody>
+            ${pagos.length ? pagos.map(p => `<tr>
+                <td>${p.encuentro}</td><td>$${p.monto}</td><td>${p.medio}</td>
+                <td><span class="badge bg-success">Visado/Aprobado</span></td>
+            </tr>`).join('') : '<tr><td colspan="4">No hay pagos registrados o aún no han sido visados.</td></tr>'}
+        </tbody>
+    </table>`;
+    v.innerHTML = html;
+};
+window.eliminarPago = function(id) {
+    if(confirm("¿Estás seguro de eliminar este registro?")) {
+        let lista = obtenerPagos().filter(p => p.id !== id);
+        localStorage.setItem('pagos_aula_virtual', JSON.stringify(lista));
+        vPagosAdmin();
+    }
 };
 
 </script>
