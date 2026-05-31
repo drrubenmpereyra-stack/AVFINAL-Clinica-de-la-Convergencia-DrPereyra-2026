@@ -2275,15 +2275,9 @@ const alternarVisado = (id) => {
 window.vPagosAdmin = function() {
     const v = document.getElementById('main-view');
     const pagos = obtenerPagos();
-    
-    // Lista fija, sin depender de ninguna base de datos
     const alumnos = [
-        "RIOS GRACIELA",
-        "SCHWAB GISELA",
-        "STEFANINI BENZO ROMINA",
-        "RODRIGUEZ RAMIRO",
-        "CAON FEDERICO",
-        "PRAVAZ EMILIA"
+        "RIOS GRACIELA", "SCHWAB GISELA", "STEFANINI BENZO ROMINA", 
+        "RODRIGUEZ RAMIRO", "CAON FEDERICO", "PRAVAZ EMILIA"
     ];
     
     const encuentros = [
@@ -2305,7 +2299,6 @@ window.vPagosAdmin = function() {
             <div class="col-md-3">
                 <select id="p-nom" class="form-select">
                     ${alumnos.map(a => `<option value="${a}">${a}</option>`).join('')}
-                    <option value="OTRO">OTRO (Escribir)</option>
                 </select>
             </div>
             <div class="col-md-4">
@@ -2330,7 +2323,10 @@ window.vPagosAdmin = function() {
         <thead><tr><th>Estudiante</th><th>Encuentro</th><th>Monto</th><th>Medio</th><th>Visado</th><th>Acción</th></tr></thead>
         <tbody>
             ${pagos.map(p => `<tr>
-                <td>${p.nombre}</td><td>${p.encuentro}</td><td>$${p.monto}</td><td>${p.medio}</td>
+                <td>${p.nombre}</td>
+                <td>${p.encuentro}</td>
+                <td>$${p.monto}</td>
+                <td>${p.medio}</td>
                 <td><input type="checkbox" ${p.visado ? 'checked' : ''} onchange="alternarVisado(${p.id})"></td>
                 <td><button class="btn btn-sm btn-danger" onclick="eliminarPago(${p.id})">🗑️</button></td>
             </tr>`).join('')}
@@ -2379,20 +2375,40 @@ window.agregarPago = function() {
 };
 window.vPagosAlumnoView = function() {
     const v = document.getElementById('main-view');
-    const pagos = obtenerPagos().filter(p => p.visado === true);
+    const todosLosPagos = obtenerPagos();
+    
+    // Leemos la fuente de verdad que definiste en tu login: 'USER_NAME'
+    const nombreUsuario = localStorage.getItem('USER_NAME');
+
+    if (!nombreUsuario) {
+        v.innerHTML = `<div class="alert alert-danger">Error: No se encontró sesión iniciada. Por favor, vuelve a iniciar sesión.</div>`;
+        return;
+    }
+
+    // Filtramos comparando contra el nombre guardado en localStorage
+    const misPagos = todosLosPagos.filter(p => 
+        p.visado === true && p.nombre.trim().toUpperCase() === nombreUsuario.trim().toUpperCase()
+    );
     
     let html = `<h3>💰 Mis Pagos Efectuados</h3>
     <table class="table table-bordered">
-        <thead><tr><th>Encuentro</th><th>Monto</th><th>Medio</th><th>Estado</th></tr></thead>
+        <thead>
+            <tr><th>Encuentro</th><th>Monto</th><th>Medio</th><th>Estado</th></tr>
+        </thead>
         <tbody>
-            ${pagos.length ? pagos.map(p => `<tr>
-                <td>${p.encuentro}</td><td>$${p.monto}</td><td>${p.medio}</td>
+            ${misPagos.length > 0 ? misPagos.map(p => `<tr>
+                <td>${p.encuentro}</td>
+                <td>$${p.monto}</td>
+                <td>${p.medio}</td>
                 <td><span class="badge bg-success">Visado/Aprobado</span></td>
-            </tr>`).join('') : '<tr><td colspan="4">No hay pagos registrados o aún no han sido visados.</td></tr>'}
+            </tr>`).join('') : '<tr><td colspan="4">No hay pagos visados registrados a nombre de: <strong>' + nombreUsuario + '</strong>.</td></tr>'}
         </tbody>
-    </table>`;
+    </table>
+    <button class="btn btn-secondary mt-3" onclick="vHome()">Volver</button>`;
+    
     v.innerHTML = html;
 };
+
 window.eliminarPago = function(id) {
     if(confirm("¿Estás seguro de eliminar este registro?")) {
         let lista = obtenerPagos().filter(p => p.id !== id);
@@ -2405,3 +2421,4 @@ window.eliminarPago = function(id) {
 </body>
 
 </html>
+   
