@@ -1,0 +1,2393 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
+    <title>Clínica de la Convergencia - Aula Virtual V48</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root { --oro: #c5a059; --azul: #0a1f44; --verde-test: #d1e7dd; }
+        body { background-color: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        
+        /* Pantallas principales */
+        #login-screen { background: linear-gradient(135deg, #0a1f44 0%, #1a3a6a 100%); height: 100vh; display: flex; align-items: center; justify-content: center; }
+        #video-screen { background: #000; height: 100vh; display: flex; align-items: center; justify-content: center; }
+        #intro-screen { background: #0a1f44; height: 100vh; display: flex; align-items: center; justify-content: center; color: white; text-align: center; }
+        
+        /* Estilos de la Pantalla de Introducción */
+        .spinner-oro { color: var(--oro) !important; width: 3rem; height: 3rem; }
+        .fade-in-text { animation: fadeIn 1.5s ease-in-out; }
+        
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        .sidebar { min-height: 100vh; background: white; border-right: 1px solid #ddd; padding: 20px; position: sticky; top: 0; z-index: 100; }
+        .nav-link { color: var(--azul) !important; font-weight: 600; cursor: pointer; padding: 12px; border-radius: 8px; margin-bottom: 5px; transition: 0.2s; border-left: 4px solid transparent; }
+        .nav-link:hover { background: #fdf6e3; color: var(--oro) !important; border-left: 4px solid var(--oro); }
+        .btn-test-nav { background-color: var(--verde-test) !important; color: #0f5132 !important; border: 1px solid #badbcc !important; font-weight: bold; text-align: center; margin-top: 10px; border-radius: 8px; }
+        .logo-circulo { width: 140px; height: 140px; margin: 0 auto 15px; border-radius: 50%; border: 4px solid var(--oro); overflow: hidden; background: white; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .logo-circulo img { width: 100%; height: 100%; object-fit: cover; }
+        .bg-azul { background-color: var(--azul); color: white; }
+        .card { border: none; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        .notif-banner { background: #fff3cd; color: #856404; padding: 12px; border-bottom: 2px solid var(--oro); text-align: center; font-weight: bold; }
+        .question-box { border-left: 5px solid var(--oro); background: #f8f9fa; padding: 15px; margin-bottom: 15px; border-radius: 5px; }
+        .timer-display { font-size: 1.5rem; font-weight: 900; color: #dc3545; }
+        
+        .video-container { width: 100%; max-width: 800px; padding: 20px; box-shadow: 0 0 30px rgba(197, 160, 89, 0.2); border-radius: 10px; }
+
+        /* Estilos del Visor Modal PDF */
+        #pdf-visor-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; display: none; align-items: center; justify-content: center; }
+        .visor-content { background: white; width: 90%; height: 90%; border-radius: 15px; display: flex; flex-direction: column; overflow: hidden; }
+        .visor-header { background: var(--azul); color: white; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; }
+        .visor-body { flex-grow: 1; background: #525659; position: relative; }
+        .visor-footer { background: #f8f9fa; padding: 15px 25px; border-top: 1px solid #ddd; display: flex; gap: 15px; justify-content: flex-end; }
+        .qr-contenedor-estático { max-width: 180px; margin: 15px auto; padding: 10px; background: white; border: 2px dashed var(--oro); border-radius: 10px; }
+        .qr-contenedor-estático img { width: 100%; height: auto; display: block; }
+
+@media print {
+    /* 1. Ocultamos la barra lateral, botones y elementos no deseados */
+    .sidebar, .nav-link, .btn, .no-print {
+        display: none !important;
+    }
+
+    /* 2. Aseguramos que el contenido principal sea lo único que se vea */
+    body * {
+        visibility: hidden;
+    }
+    
+    #contenedor-analitico-espejo, #contenedor-analitico-espejo * {
+        visibility: visible;
+    }
+
+    /* 3. Ajustamos el contenedor al inicio de la página */
+    #contenedor-analitico-espejo {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+    }
+}
+   </style>
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+
+</head>
+<body>
+
+<div style="display: none;">
+    <img id="img-nodo-logo" src="logo.jpg">
+    <img id="img-nodo-sello" src="sello.jpg">
+</div>
+
+<div id="pdf-visor-modal">
+    <div class="visor-content shadow-lg">
+        <div class="visor-header">
+            <h5 class="m-0 fw-bold"><i class="fa-solid fa-file-pdf me-2"></i> CONSOLA DE AUDITORÍA Y EMISIÓN OFICIAL DE ANALÍTICOS</h5>
+            <button class="btn btn-outline-light btn-sm" onclick="cerrarVisor()">Cerrar</button>
+        </div>
+        <div class="visor-body">
+            <iframe id="pdf-frame" width="100%" height="100%" frameborder="0"></iframe>
+        </div>
+        <div class="visor-footer">
+            <div id="drive-link-container" class="me-auto d-flex align-items-center"></div>
+            <button id="btn-save-pdf" class="btn btn-dark fw-bold px-4">📥 GUARDAR ARCHIVO PDF</button>
+            <button class="btn btn-secondary" onclick="cerrarVisor()">SALIR</button>
+        </div>
+    </div>
+</div>
+
+<div id="login-screen">
+    <div class="card p-4 text-center" style="width: 400px;">
+        <div class="logo-circulo"><img src="logo.jpg" onerror="this.src='https://via.placeholder.com/150?text=Logo'"></div>
+        <h4 style="color: var(--azul); font-weight: 800;">CLÍNICA DE LA CONVERGENCIA</h4>
+        <p class="text-muted fw-bold">Dr. y Mgter. Rubén M. Pereyra</p>
+        <hr>
+        <div class="text-start">
+            <label class="small fw-bold">Apellido (Usuario):</label>
+            <input type="text" id="u_log" class="form-control mb-2 shadow-sm" style="text-transform: uppercase;">
+            <label class="small fw-bold">Contraseña / Código de Acceso:</label>
+            <input type="password" id="p_log" class="form-control mb-3 shadow-sm">
+        </div>
+        <button onclick="ejecutarLogin()" class="btn btn-dark w-100 py-2 fw-bold shadow" style="background-color: var(--oro); border:none;">INGRESAR AL SISTEMA</button>
+    </div>
+</div>
+
+<div id="video-screen" class="d-none">
+    <div class="video-container">
+        <video id="intro-video" width="100%" height="auto" preload="auto" muted playsinline>
+            <source src="https://github.com/drrubenmpereyra-stack/intro-aula-virtial-cc-DRPEREYRA/raw/refs/heads/main/INTRO_CC.mp4" type="video/mp4">
+        </video>
+    </div>
+</div>
+
+<div id="intro-screen" class="d-none">
+    <div class="fade-in-text">
+        <div class="logo-circulo mb-4" style="width: 160px; height: 160px;">
+            <img src="logo.jpg" onerror="this.src='https://via.placeholder.com/150?text=Logo'">
+        </div>
+        <h1 style="color: var(--oro); font-weight: 800; letter-spacing: 2px;">BIENVENIDO</h1>
+        <h3 id="intro-nombre-usuario" class="fw-light mb-4 text-white"></h3>
+        <p class="text-muted small mb-4">Iniciando entorno de convergencia clínica y neurociencias...</p>
+        <div class="spinner-border spinner-oro" role="status">
+            <span class="visually-hidden">Cargando...</span>
+        </div>
+    </div>
+</div>
+
+<div id="app-screen" class="d-none">
+    <div id="global-notif" class="notif-banner d-none"></div>
+    <nav class="navbar navbar-dark bg-azul px-4 shadow-sm sticky-top">
+        <span class="navbar-brand fw-bold">AULA VIRTUAL 2026</span>
+        <div class="ms-auto d-flex align-items-center text-white small">
+            <span id="label-usuario" class="me-3 fw-bold"></span>
+            <button onclick="location.reload()" class="btn btn-sm btn-outline-light">Salir</button>
+        </div>
+    </nav>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3 col-lg-2 sidebar shadow-sm" id="menu-side">
+                </div>
+            <main class="col-md-9 col-lg-10 p-4" id="main-view">
+                </main>
+        </div>
+    </div>
+</div>
+
+<script>
+// --- BASE DE DATOS CENTRAL PARA REGISTROS ---
+const DB_KEY = 'cc_v38_db';
+let db = JSON.parse(localStorage.getItem(DB_KEY)) || { 
+    participantes: [], encuentros: [], talleres: [], agenda: [], pagos: [], asistencias: [], notas: [], materiales: [], analiticosVisibles: {}, testsIA: [], anuncio: "", legajos: {} 
+};
+
+// Listado oficial absoluto con datos, links estables y mapeo QR físico correspondientes
+const listadoOficialEstudiantes = [
+    { apellido: "RIOS", nombre: "Graciela", dni: "17319305", codigo: "R305", profesion: "Psicólogo/a", celular: "-", driveFolder: "https://drive.google.com/drive/folders/1GZZ-VdkGxwBmW2PSgsGoy6MCwGRJbYDe?usp=sharing", qrFile: "QR Graciela Rios.jpg" },
+    { apellido: "SCHWAB", nombre: "Gisela", dni: "24557473", codigo: "S473", profesion: "Psicólogo/a", celular: "-", driveFolder: "https://drive.google.com/drive/folders/1iOcm67AR5iegSvK2hqf7y2JcyR0_mejW?usp=sharing", qrFile: "QR GISELA SCHWAB.jpg" },
+    { apellido: "RODRIGUEZ", nombre: "Ramiro", dni: "17319325", codigo: "R325", profesion: "Psicólogo/a", celular: "-", driveFolder: "https://drive.google.com/drive/folders/1sNIdlF2C-KFQShTA_a7WD5NjygjDwkXc?usp=sharing", qrFile: "QR RAMIRO RODRIGUEZ.jpg" },
+    { apellido: "STEFANINI", nombre: "Romina Benzo", dni: "30772297", codigo: "S297", profesion: "Psicólogo/a", celular: "-", driveFolder: "https://drive.google.com/drive/folders/1qeROIz-Ihdzy6u60aq9gfZaSxm1sHj1s?usp=sharing", qrFile: "QR ROMINA STEFANINI BENZO.jpg" },
+    { apellido: "CAON", nombre: "Federico", dni: "32458703", codigo: "C703", profesion: "Psicólogo/a", celular: "-", driveFolder: "https://drive.google.com/drive/folders/1vSLgTa5X5dClAaUqXzZl6ubPGY5KJYaJ?usp=sharing", qrFile: "QR FEDERICO CAON.jpg" },
+    { apellido: "PRAVAZ", nombre: "Emilia", dni: "32059206", codigo: "P206", profesion: "Psicólogo/a", celular: "-", driveFolder: "https://drive.google.com/file/d/1Elz0Dekm-3VNGKr5adoB0dU1mzuIUyeN/view?usp=drive_link", qrFile: "QR EMILIA PRAVAZ.jpg" }
+];
+
+function asegurarParticipantesInternos() {
+    if (!db.participantes) db.participantes = [];
+    listadoOficialEstudiantes.forEach(est => {
+        const index = db.participantes.findIndex(p => p.dni === est.dni);
+        if (index === -1) {
+            db.participantes.push(est);
+        } else {
+            db.participantes[index].driveFolder = est.driveFolder;
+            db.participantes[index].qrFile = est.qrFile;
+            db.participantes[index].codigo = est.codigo;
+            db.participantes[index].nombre = est.nombre;
+            db.participantes[index].profesion = est.profesion;
+        }
+    });
+    localStorage.setItem(DB_KEY, JSON.stringify(db));
+}
+asegurarParticipantesInternos();
+
+let sesion = null;
+let testTemp = null;
+let timerVar = null;
+let editIndex = -1;
+
+const guardar = () => localStorage.setItem(DB_KEY, JSON.stringify(db));
+
+function ejecutarLogin() {
+    asegurarParticipantesInternos();
+    const u = document.getElementById('u_log').value.trim().toUpperCase();
+    const p = document.getElementById('p_log').value.trim();
+    
+    if (u === "DRPEREYRA" && p === "235689") {
+        sesion = { rol: 'ADM', nombre: 'Dr. y Mgter. Rubén Pereyra', dni: '0' };
+    } else if (u === "RIOS" && p === "R305") {
+        sesion = { rol: 'USR', nombre: 'RIOS GRACIELA', dni: '17319305' };
+    } else if (u === "SCHWAB" && p === "S473") {
+        sesion = { rol: 'USR', nombre: 'SCHWAB GISELA', dni: '24557473' };
+    } else if (u === "RODRIGUEZ" && p === "R325") {
+        sesion = { rol: 'USR', nombre: 'RODRIGUEZ RAMIRO', dni: '17319325' };
+    } else if (u === "CAON" && p === "C703") {
+        sesion = { rol: 'USR', nombre: 'CAON FEDERICO', dni: '32458703' };
+    } else if (u === "PRAVAZ" && p === "P206") {
+        sesion = { rol: 'USR', nombre: 'PRAVAZ EMILIA', dni: '32059206' };
+    } else if (u === "STEFANINI" && p === "S297") {
+        sesion = { rol: 'USR', nombre: 'STEFANINI ROMINA BENZO', dni: '30772297' };
+    } else {
+        return alert("Credenciales incorrectas.");
+    }
+
+    // GUARDAMOS EL NOMBRE EN EL NAVEGADOR
+    localStorage.setItem('USER_NAME', sesion.nombre);
+
+    // Flujo del reproductor de video intro
+    document.getElementById('login-screen').classList.add('d-none');
+    document.getElementById('video-screen').classList.remove('d-none');
+    
+    const video = document.getElementById('intro-video');
+    video.play().catch(err => console.log("Intro activa"));
+
+    setTimeout(() => {
+        video.pause();
+        document.getElementById('video-screen').classList.add('d-none');
+        document.getElementById('intro-screen').classList.remove('d-none');
+        document.getElementById('intro-nombre-usuario').innerText = sesion.nombre;
+
+        setTimeout(() => {
+            document.getElementById('intro-screen').classList.add('d-none');
+            document.getElementById('app-screen').classList.remove('d-none');
+            document.getElementById('label-usuario').innerText = sesion.nombre;
+            
+            if(db.anuncio) {
+                const nb = document.getElementById('global-notif');
+                nb.innerText = "📢 " + db.anuncio;
+                nb.classList.remove('d-none');
+            }
+            
+            renderMenu();
+            vHome();
+        }, 3000);
+    }, 10000);
+}
+function renderMenu() {
+    const m = document.getElementById('menu-side');
+    const isA = (sesion.rol === 'ADM');
+
+    let h = `<div class="nav-link" onclick="vHome()">🏠 Inicio / Dashboard</div>
+             <div class="nav-link" onclick="vEncs()">📅 Encuentros</div>
+             <div class="nav-link" onclick="vTals()">🏫 Talleres</div>
+             <div class="nav-link" onclick="vAge()">📔 Agenda</div>
+             <div class="nav-link" onclick="vBib()">📚 Biblioteca</div><hr>`;
+
+    if(!isA) {
+        h += `<div class="nav-link" onclick="vTestsAlumno()">📝 Mis Tests</div>
+              <div class="nav-link" onclick="vPagosAlumnoView()">💰 Mis Pagos</div>
+              <div class="nav-link" onclick="vNotificacionesAlu()">📝 Mis Calificaciones</div>
+              <div class="nav-link" onclick="verMiProgresoAsistencia()">✅ Mi Asistencia</div>
+              <div class="nav-link" id="m-al-an" onclick="vAnaliticoAlumnoView()">📜 Mi Analítico Oficial</div>`;
+    } else {
+        h += `<div class="nav-link" onclick="vPart()">👥 Participantes</div>
+              <div class="nav-link" onclick="vPagosAdmin()">💰 Pagos</div>
+              <div class="nav-link" onclick="gestionarAsistenciasAdmin()">✅ Asistencia</div>
+              <div class="nav-link" onclick="vCalificacionesAdmin()">📝 CALIFICACIONES</div>
+              <div class="nav-link" onclick="vAnaliticoAdmin()">📜 ANALÍTICOS</div>
+              <div class="nav-link" onclick="mostrarVisadoAdmin()">🛡️ VISADO ANALÍTICO</div>
+              <div class="nav-link" onclick="vToolsAdmin()">🛠️ Herramientas</div>
+              <hr>
+              <div class="nav-link" onclick="vGestionEdicionTest()">🤖 EDICIÓN TEST</div>
+              <div class="nav-link" onclick="vAuditoriaTest()">🧐 AUDITORÍA TEST CON IA</div>
+              <div class="nav-link" onclick="vAuditoriaTalleres()">📊 AUDITORÍA TALLERES</div>`;
+    }
+    m.innerHTML = h;
+}
+
+function vHome() {
+    const v = document.getElementById('main-view');
+    if(sesion.rol === 'ADM') {
+        v.innerHTML = `<h3>Tablero de Gestión</h3><div class="row">
+            <div class="col-md-6 mb-4"><div class="card p-3"><h5>Promedio Notas</h5><canvas id="ch1"></canvas></div></div>
+            <div class="col-md-6 mb-4"><div class="card p-3"><h5>Estado de Pagos</h5><canvas id="ch2"></canvas></div></div>
+        </div>`;
+        setTimeout(() => {
+            new Chart(document.getElementById('ch1'), { type:'bar', data:{ labels:['E1','E2','E3'], datasets:[{label:'Nota', data:[8,7,9], backgroundColor:'#c5a059'}]} });
+            new Chart(document.getElementById('ch2'), { type:'pie', data:{ labels:['Pagado','Pendiente'], datasets:[{data:[db.pagos.length, 5], backgroundColor:['#198754','#dc3545']}]} });
+        }, 100);
+    } else {
+        v.innerHTML = `<div class="text-center py-5"><h3>Bienvenido al Aula Virtual, ${sesion.nombre}</h3><p>Clínica de la Convergencia 2026</p></div>`;
+    }
+}
+
+function vPart() {
+    editIndex = -1;
+    let h = `<h3>Participantes</h3>
+    <div class="card p-3 mb-3 bg-light border-0 shadow-sm">
+        <div class="row g-2">
+            <div class="col-md-2"><input id="p1" placeholder="Apellido" class="form-control"></div>
+            <div class="col-md-2"><input id="p2" placeholder="Nombre" class="form-control"></div>
+            <div class="col-md-2"><input id="p3" placeholder="DNI (Obligatorio)" class="form-control"></div>
+            <div class="col-md-2"><input id="p_cod" placeholder="Código Acceso" class="form-control"></div>
+            <div class="col-md-2"><input id="p4" placeholder="Profesión" class="form-control"></div>
+            <div class="col-md-2"><input id="p5" placeholder="Celular" class="form-control"></div>
+            <div class="col-md-2 mt-2"><button id="btn-save-p" class="btn btn-oro w-100" onclick="addP()">Añadir Alumno</button></div>
+        </div>
+    </div>
+    <table class="table bg-white rounded shadow-sm text-center">
+        <thead>
+            <tr class="table-dark"><th>Nombre / Apellido</th><th>DNI (Legal)</th><th>Código Acceso</th><th>Profesión</th><th>WA</th><th>Acciones</th></tr>
+        </thead>
+        <tbody>
+            ${db.participantes.map((p, i) => `<tr>
+                <td>${p.apellido}, ${p.nombre}</td>
+                <td><b>${p.dni}</b></td>
+                <td><span class="badge bg-secondary">${p.codigo || p.dni}</span></td>
+                <td>${p.profesion}</td>
+                <td><a href="https://wa.me/${p.celular}" target="_blank" class="btn btn-xs btn-outline-success py-0">Chat</a></td>
+                <td>
+                    <button class="btn btn-sm btn-dark px-2 py-0" onclick="cargarEditP(${i})">Editar</button>
+                    <button class="btn btn-sm btn-danger px-2 py-0" onclick="delP(${i})">X</button>
+                </td>
+            </tr>`).join('')}
+        </tbody>
+    </table>`;
+    document.getElementById('main-view').innerHTML = h;
+}
+
+function addP() {
+    const ape = document.getElementById('p1').value.toUpperCase();
+    const nom = document.getElementById('p2').value;
+    const documentId = document.getElementById('p3').value.trim();
+    const cod = document.getElementById('p_cod').value.trim();
+    const prof = document.getElementById('p4').value;
+    const cel = document.getElementById('p5').value;
+
+    if(!documentId) return alert("El campo DNI es obligatorio.");
+
+    if(editIndex === -1) {
+        db.participantes.push({ apellido: ape, nombre: nom, dni: documentId, codigo: cod || documentId, profesion: prof, celular: cel });
+    } else {
+        db.participantes[editIndex] = { apellido: ape, nombre: nom, dni: documentId, codigo: cod || documentId, profesion: prof, celular: cel };
+    }
+    guardar(); vPart(); renderMenu();
+}
+
+function cargarEditP(i) {
+    editIndex = i; const p = db.participantes[i];
+    document.getElementById('p1').value = p.apellido; document.getElementById('p2').value = p.nombre; document.getElementById('p3').value = p.dni;
+    document.getElementById('p_cod').value = p.codigo || p.dni; document.getElementById('p4').value = p.profesion; document.getElementById('p5').value = p.celular;
+    const btn = document.getElementById('btn-save-p'); btn.innerText = "Guardar Cambios"; btn.className = "btn btn-success w-100";
+}
+function delP(i){ db.participantes.splice(i,1); guardar(); vPart(); renderMenu(); }
+
+window.vEncs = function() {
+    let h = `<h3>📅 Encuentros Ciclo 2026</h3>`;
+    
+    // Formulario de carga (solo para administrador)
+    if(sesion.rol === 'ADM') {
+        h += `<div class="card p-3 mb-3 border-0 bg-light shadow-sm">
+                <div class="row g-2">
+                    <div class="col-md-2"><input id="e1" placeholder="Título" class="form-control"></div>
+                    <div class="col-md-2"><input id="e2" type="date" class="form-control"></div>
+                    <div class="col-md-2"><input id="e3" placeholder="Link Meet" class="form-control"></div>
+                    <div class="col-md-2"><input id="e4" placeholder="Link Grabación" class="form-control"></div>
+                    <div class="col-md-2"><input id="e5" placeholder="URL Imagen" class="form-control"></div>
+                    <div class="col-md-2"><button class="btn btn-oro w-100" onclick="addE()">+ Agregar</button></div>
+                </div>
+              </div>`;
+    }
+
+    h += `<div class="row">`;
+    db.encuentros.forEach((e, i) => {
+        h += `
+        <div class="col-md-6 mb-3">
+            <div class="card shadow-sm h-100">
+                <div class="row g-0 h-100">
+                    <div class="col-4">
+                        <img src="${e.img || 'https://via.placeholder.com/150'}" class="img-fluid rounded-start h-100" style="object-fit: cover;">
+                    </div>
+                    <div class="col-8">
+                        <div class="card-body py-2">
+                            <h6 class="card-title text-azul fw-bold">${e.titulo}</h6>
+                            <p class="small text-muted m-0">${e.fecha}</p>
+                            <div class="mt-2">
+                                <a href="${e.meet}" target="_blank" class="btn btn-sm btn-outline-primary w-100 mb-1 fw-bold">📹 Meet</a>
+                                <a href="${e.grab}" target="_blank" class="btn btn-sm btn-success w-100 fw-bold">🎬 Grabación</a>
+                                ${sesion.rol === 'ADM' ? `<button onclick="delE(${i})" class="btn btn-link text-danger btn-sm w-100">Borrar</button>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+    });
+    
+    document.getElementById('main-view').innerHTML = h + `</div>`;
+};
+
+window.addE = function() { 
+    db.encuentros.push({
+        titulo: document.getElementById('e1').value, 
+        fecha: document.getElementById('e2').value, 
+        meet: document.getElementById('e3').value, 
+        grab: document.getElementById('e4').value,
+        img: document.getElementById('e5').value
+    }); 
+    guardar(); // Asegúrate de llamar a tu función de guardado (persistir)
+    vEncs(); 
+};
+
+window.delE = function(i) { 
+    db.encuentros.splice(i, 1); 
+    guardar(); 
+    vEncs(); 
+};
+
+
+function drawNotaTable(dni) {
+    if(!dni) return;
+    let h = `<table class="table table-bordered bg-white shadow-sm"><thead><tr class="table-dark"><th>Actividad</th><th>Taller</th><th>Examen Final</th></tr></thead><tbody>`;
+    db.encuentros.forEach(e => {
+        const idT = `${dni}-${e.titulo}-Taller`; const idE = `${dni}-${e.titulo}`;
+        let nT = db.notas.find(n => n.id === idT) || { valor: '' }; let nE = db.notas.find(n => n.id === idE) || { valor: '' };
+        h += `<tr><td>${e.titulo}</td><td><input type="number" class="form-control" value="${nT.valor}" onchange="sManual('${idT}',this.value)"></td><td><input type="number" class="form-control" value="${nE.valor}" onchange="sManual('${idE}',this.value)"></td></tr>`;
+    });
+    db.testsIA.forEach(t => {
+        const idIA = `${dni}-${t.titulo}`; let nIA = db.notas.find(n => n.id === idIA) || { valor: '' };
+        h += `<tr class="table-info"><td>${t.titulo} (Auto IA)</td><td colspan="2"><input type="number" class="form-control" value="${nIA.valor}" onchange="sManual('${idIA}',this.value)"></td></tr>`;
+    });
+    document.getElementById('notContainer').innerHTML = h + `</tbody></table>`;
+}
+function sManual(id, v){ let x=db.notas.find(n=>n.id==id); if(x) x.valor=v; else db.notas.push({id,valor:v}); guardar(); }
+
+
+
+// --- SECCIONES NATIVAS DE LA V38 INTACTAS ---
+window.vTals = function() { 
+    let h = `<h3>🛠️ Talleres</h3>`; 
+    if(sesion.rol==='ADM') h += `<div class="card p-3 mb-3 bg-light shadow-sm"><input id="t1" placeholder="Nombre" class="form-control mb-1"><input id="t2" placeholder="Material" class="form-control mb-1"><input id="t3" placeholder="URL Imagen" class="form-control mb-2"><button class="btn btn-oro w-100" onclick="addT()">Guardar</button></div>`;
+    h += `<div class="row">`;
+    if(db.talleres) {
+        db.talleres.forEach((t, i) => {
+            h += `<div class="col-md-6 mb-2">
+                    <div class="card shadow-sm h-100">
+                        <div class="row g-0 h-100">
+                            <div class="col-4">
+                                <img src="${t.img || 'https://via.placeholder.com/150'}" class="img-fluid rounded-start h-100" style="object-fit: cover; width: 100%;">
+                            </div>
+                            <div class="col-8">
+                                <div class="card-body py-2">
+                                    <h6 class="card-title fw-bold">${t.nombre}</h6>
+                                    <a href="${t.link}" target="_blank" class="btn btn-sm btn-outline-primary w-100 mb-1">Ver Material</a>
+                                    ${sesion.rol==='ADM'?`<button onclick="delT(${i})" class="btn btn-link text-danger btn-sm w-100 p-0">Borrar</button>`:''}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                  </div>`;
+        });
+    }
+    h += `</div>`;
+    document.getElementById('main-view').innerHTML = h;
+}
+
+function addT(){ 
+    if(!db.talleres) db.talleres=[]; 
+    db.talleres.push({
+        nombre:document.getElementById('t1').value, 
+        link:document.getElementById('t2').value, 
+        img:document.getElementById('t3').value
+    }); 
+    guardar(); 
+    vTals(); 
+}
+
+function delT(i){ db.talleres.splice(i,1); guardar(); vTals(); }
+
+window.addT = function() { 
+    if(!db.talleres) db.talleres = []; 
+    db.talleres.push({
+        nombre: document.getElementById('t1').value, 
+        link: document.getElementById('t2').value,
+        img: document.getElementById('t3').value
+    }); 
+    guardar(); 
+    vTals(); 
+};
+
+window.delT = function(i) { 
+    db.talleres.splice(i, 1); 
+    guardar(); 
+    vTals(); 
+};
+
+window.addT = function() { 
+    if(!db.talleres) db.talleres = []; 
+    db.talleres.push({
+        nombre: document.getElementById('t1').value, 
+        link: document.getElementById('t2').value,
+        img: document.getElementById('t3').value // Nuevo campo
+    }); 
+    guardar(); 
+    vTals(); 
+};
+
+window.delT = function(i) { 
+    db.talleres.splice(i, 1); 
+    guardar(); 
+    vTals(); 
+};
+
+function vAge(){ 
+    let h=`<h3>Agenda</h3><table class="table shadow-sm bg-white"><tbody>${db.agenda ? db.agenda.map((a,i)=>`<tr><td>${a.fecha}</td><td>${a.nombre}</td><td><button class="btn btn-xs btn-danger" onclick="delA(${i})">X</button></td></tr>`).join('') : ''}</tbody></table>`; 
+    if(sesion.rol==='ADM') h += `<div class="card p-3"><input id="a1" placeholder="Evento" class="form-control mb-1"><input id="a2" type="date" class="form-control mb-2"><button class="btn btn-oro w-100" onclick="addAge()">Agendar</button></div>`; 
+    document.getElementById('main-view').innerHTML = h; 
+}
+function addAge(){ if(!db.agenda)db.agenda=[]; db.agenda.push({nombre:document.getElementById('a1').value, fecha:document.getElementById('a2').value}); guardar(); vAge(); }
+function delA(i){ db.agenda.splice(i,1); guardar(); vAge(); }
+
+window.vBib = function() { 
+    let h = `<h3>📚 Biblioteca</h3>`;
+    
+    if(sesion.rol === 'ADM') { 
+        h += `<div class="card p-3 mb-3 bg-light shadow-sm">
+                <input id="b1" placeholder="Nombre del Material" class="form-control mb-1">
+                <input id="b2" placeholder="Link (Drive)" class="form-control mb-1">
+                <input id="b3" placeholder="URL Imagen" class="form-control mb-2">
+                <button class="btn btn-oro w-100" onclick="addBib()">Subir Material</button>
+              </div>`;
+    }
+
+    h += `<div class="row">`;
+    if(db.materiales) {
+        db.materiales.forEach((m, i) => {
+            h += `<div class="col-md-4 mb-3">
+                    <div class="card shadow-sm h-100">
+                        <img src="${m.img || 'https://via.placeholder.com/150'}" class="card-img-top" style="height: 150px; object-fit: cover;">
+                        <div class="card-body p-2 text-center">
+                            <h6 class="card-title fw-bold">${m.nombre}</h6>
+                            <a href="${m.url}" target="_blank" class="btn btn-sm btn-dark w-100 mb-1">Ver en Drive</a>
+                            ${sesion.rol === 'ADM' ? `<button onclick="delB(${i})" class="btn btn-link text-danger btn-sm w-100">Borrar</button>` : ''}
+                        </div>
+                    </div>
+                  </div>`;
+        });
+    }
+    h += `</div>`;
+    document.getElementById('main-view').innerHTML = h;
+};
+
+window.addBib = function() { 
+    if(!db.materiales) db.materiales = [];
+    db.materiales.push({
+        nombre: document.getElementById('b1').value, 
+        url: document.getElementById('b2').value,
+        img: document.getElementById('b3').value
+    }); 
+    guardar(); 
+    vBib(); 
+};
+
+window.delB = function(i) { 
+    db.materiales.splice(i, 1); 
+    guardar(); 
+    vBib(); 
+};
+
+function vPagA() {
+    let h = `<h3>Registro de Pagos</h3><table class="table text-center table-sm bg-white shadow-sm"><thead><tr class="table-dark"><th>Alumno</th><th>Mes</th><th>Monto $</th><th>Medio</th><th>Estado</th></tr></thead><tbody>`;
+    db.participantes.forEach(p => { db.encuentros.forEach(e => {
+        const id = `${p.dni}-${e.titulo}-Pago`; let pg = db.pagos.find(x=>x.id===id) || {monto:0, medio:'Efectivo', estado:'Pendiente'};
+        h += `<tr><td class="small">${p.apellido}</td><td>${e.titulo}</td><td><input type="number" class="form-control form-control-sm" value="${pg.monto}" onchange="updPg('${id}','monto',this.value)"></td><td><select class="form-select form-select-sm" onchange="updPg('${id}','medio',this.value)"><option value="Efectivo" ${pg.medio=='Efectivo'?'selected':''}>Ef</option><option value="Transferencia" ${pg.medio=='Transferencia'?'selected':''}>Tr</option></select></td><td><button onclick="tgPg('${id}')" class="btn btn-xs ${pg.estado=='Abonado'?'btn-success':'btn-warning'}">${pg.estado}</button></td></tr>`;
+    });});
+    document.getElementById('main-view').innerHTML = h + `</tbody></table>`;
+}
+function updPg(id,c,v){ let x=db.pagos.find(p=>p.id==id); if(!x){x={id:id,monto:0,medio:'Efectivo',estado:'Pendiente'};db.pagos.push(x);} x[c]=v; guardar(); }
+function tgPg(id){ let x=db.pagos.find(p=>p.id==id); if(!x){x={id:id,monto:0,medio:'Efectivo',estado:'Pendiente'};db.pagos.push(x);} x.estado=(x.estado=='Pendiente')?'Abonado':'Pendiente'; guardar(); vPagA(); }
+// Función consolidada de Herramientas
+function vToolsAdmin() {
+    const v = document.getElementById('main-view');
+    v.innerHTML = `
+        <h3>🛠️ Herramientas de Administración</h3>
+        
+        <div class="card p-3 mb-3 shadow-sm border-0 bg-success bg-opacity-10">
+            <h5>💾 Persistencia de Datos</h5>
+            <p class="small">Sincroniza todos los cambios actuales con el almacenamiento del navegador.</p>
+            <button class="btn btn-success fw-bold" onclick="guardarApp(); alert('¡Datos guardados correctamente!');">
+                <i class="fa-solid fa-floppy-disk"></i> FORZAR GUARDADO TOTAL
+            </button>
+        </div>
+
+        <div class="card p-3 mb-3 shadow-sm border-0">
+            <h5>📢 Notificación Global</h5>
+            <input id="an-txt" class="form-control mb-2" value="${db.anuncio || ''}">
+            <button class="btn btn-primary" onclick="saveAn()">Publicar Anuncio</button>
+        </div>
+
+        <div class="card p-3 mb-3 shadow-sm border-0">
+            <h5>🔄 Restaurar Base de Datos (.json)</h5>
+            <input type="file" id="import-file" class="form-control mb-2" accept=".json">
+            <button class="btn btn-danger fw-bold" onclick="restaurarBackup()">Cargar e Importar Datos</button>
+        </div>
+
+        <div class="card p-3 shadow-sm border-0 bg-light">
+            <h5>🧹 Limpieza General</h5>
+            <p class="text-muted small">Borra todas las notas y asistencias actuales conservando el registro de alumnos.</p>
+            <button class="btn btn-warning w-100 fw-bold" onclick="limpiarCargaTotal()">Ejecutar Limpieza Total</button>
+        </div>`;
+}
+
+// Función de limpieza mejorada para también resetear el objeto DB
+function limpiarCargaTotal() {
+    if (confirm("⚠️ ¿Estás seguro? Se borrarán todos los datos cargados en el aula (notas y asistencias).")) {
+        // 1. Limpiamos la base de datos en memoria (ejemplo lógico)
+        db.participantes.forEach(est => {
+            est.notas = []; // O como se llamen tus campos de notas
+            est.asistencia = false; 
+        });
+        
+        // 2. Persistimos el cambio para que no vuelva al refrescar
+        guardarApp();
+        
+        // 3. Refrescamos la vista actual
+        alert("Aula liberada con éxito.");
+        vHome(); 
+    }
+}
+
+
+
+
+function saveAn(){ db.anuncio = document.getElementById('an-txt').value; guardar(); alert("Publicado."); location.reload(); }
+
+function vPagU() { const m = db.pagos.filter(x=>x.id.startsWith(sesion.dni)); document.getElementById('main-view').innerHTML=`<h3>Mis Pagos</h3><table class="table bg-white"><thead><tr class="table-dark"><th>Mes</th><th>Monto</th><th>Estado</th></tr></thead><tbody>${m.map(x=>`<tr><td>${x.id.split('-')[1]}</td><td>$${x.monto}</td><td>${x.estado}</td></tr>`).join('')}</tbody></table>`; }
+function vNotU() { const m = db.notas.filter(x=>x.id.startsWith(sesion.dni)); document.getElementById('main-view').innerHTML=`<h3>Mis Calificaciones</h3><table class="table bg-white shadow-sm">${m.map(x=>`<tr><td class="fw-bold">${x.id.split('-')[1]}</td><td>${x.valor}/10</td></tr>`).join('')}</table>`; }
+
+function drawListaIA() { 
+    let h = `<div class="mt-4"><h5 class="fw-bold text-azul mb-3"><i class="fa-solid fa-list-check me-2"></i> Exámenes IA Publicados Activos</h5><ul class="list-group shadow-sm">`; 
+    if (!db.testsIA || db.testsIA.length === 0) {
+        h += `<li class="list-group-item text-muted small text-center py-3">No hay exámenes generados por IA publicados actualmente.</li>`;
+    } else {
+        db.testsIA.forEach((t, i) => { 
+            h += `<li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <b class="text-azul">${t.titulo}</b> 
+                        <span class="badge bg-secondary ms-2">${t.minutos} min</span>
+                    </div>
+                    <button class="btn btn-sm btn-danger fw-bold px-3 shadow-sm" onclick="delIA(${i})">
+                        <i class="fa-solid fa-trash-can me-1"></i> ELIMINAR
+                    </button>
+                  </li>`; 
+        }); 
+    }
+    document.getElementById('listaIA').innerHTML = h + `</ul></div>`; 
+}
+
+function delIA(i) {
+    if (confirm("¿Está seguro de que desea eliminar este examen de forma definitiva? Se borrará del sistema y de la vista de todos los alumnos.")) {
+        db.testsIA.splice(i, 1);
+        guardar();       
+        vEditorIA();     
+        renderMenu();    
+        alert("Examen eliminado con éxito.");
+    }
+}
+
+function vRenderAluTest(tituloTest) {
+    const v = document.getElementById('main-view');
+    const t = db.testsIA.find(x => x.titulo === tituloTest);
+    if (!t) return alert("Error al cargar el examen.");
+
+    v.innerHTML = `
+        <div class="card p-4 border-0 shadow-sm" style="border-top: 4px solid var(--oro) !important;">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="fw-bold text-azul mb-0"><i class="fa-solid fa-file-signature me-2 text-warning"></i> Evaluación Académica Oficial</h4>
+                <span class="badge bg-danger p-2 fw-bold shadow-sm"><i class="fa-solid fa-clock me-1"></i> Límite: ${t.minutos} min</span>
+            </div>
+            <div class="p-2 bg-light rounded mb-3 fw-bold text-azul">Test: ${t.titulo}</div>
+            <p class="text-muted small">Resuelva cada una de las actividades de convergencia generadas por la dirección médica. Al finalizar la totalidad del examen presione el botón de envío.</p>
+            <hr>
+            <div class="my-4 p-3 bg-white rounded border shadow-sm">
+                ${t.htmlRendicion || (t.preguntas && t.preguntas[0] && t.preguntas[0].htmlRendicion) || '<p class="text-danger">Error al renderizar las actividades.</p>'}
+            </div>
+            <button onclick="alert('Examen enviado con éxito. Las respuestas han sido registradas para la auditoría de la dirección médica.'); vHome();" class="btn btn-success fw-bold w-100 py-2 shadow-sm">
+                <i class="fa-solid fa-paper-plane me-2"></i> COMPROBAR Y ENVIAR EVALUACIÓN
+            </button>
+        </div>
+    `;
+}
+function vClasesAlumno() {}
+function vMaterialesAlumno() {}
+
+function backup() { 
+    const ds = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(db)); 
+    const dl = document.createElement('a'); dl.setAttribute("href", ds); dl.setAttribute("download", "cc_backup.json"); dl.click(); 
+}
+
+function restaurarBackup() {
+    const archivoInput = document.getElementById('import-file');
+    if (!archivoInput.files || archivoInput.files.length === 0) return alert("Seleccione un archivo.");
+    const lector = new FileReader();
+    lector.onload = function(e) {
+        try {
+            const datosParseados = JSON.parse(e.target.result);
+            if (datosParseados.participantes) {
+                if (confirm("¿Sobrescribir base de datos?")) { db = datosParseados; asegurarParticipantesInternos(); guardar(); alert("Restaurado."); location.reload(); }
+            }
+        } catch (err) { alert("Error en JSON."); }
+    };
+    lector.readAsText(archivoInput.files[0]);
+}
+// Definición local dentro de la función para no tocar el resto del sistema
+// Función vGestionEdicionTest con diseño a pantalla completa
+window.vGestionEdicionTest = function() {
+    const v = document.getElementById('main-view');
+    v.style.display = 'block';
+    
+    // Lista local de encuentros para evitar dependencias globales externas
+    const encuentros = [
+        { id: 1, nombre: "Cartografía de la Intersubjetividad" },
+        { id: 2, nombre: "La Memoria Traumática y el \"Aposteriori\"" },
+        { id: 3, nombre: "Circuitos de Recompensa y Patologías del Deseo" },
+        { id: 4, nombre: "El Marcador Somático en la Transferencia" },
+        { id: 5, nombre: "Neurobiología de la Repetición" },
+        { id: 6, nombre: "Plasticidad Simbólica y Sináptica" },
+        { id: 7, nombre: "Arquitectura del Sueño y Función Alucinatoria" },
+        { id: 8, nombre: "El Ello Somático y Trastornos Psicosomáticos" },
+        { id: 9, nombre: "Focalización en Estructuras Límbicas" },
+        { id: 10, nombre: "Ética de la Singularidad en la Era Tecnológica" }
+    ];
+
+    const opts = encuentros.map(e => `<option value="${e.id}">Enc ${e.id} - ${e.nombre}</option>`).join('');
+
+    v.innerHTML = `
+        <div style="background-color: #000; min-height: 100vh; padding: 40px; color: #000; width: 100%;">
+            <div style="background-color: #fff; border: 3px solid #ffd700; padding: 30px; width: 100%; max-width: 1200px; margin: auto;">
+                <h2 style="margin-bottom: 30px;">Edición Test</h2>
+                <div class="row">
+                    <div class="col-md-6">
+                        <label>Encuentro:</label>
+                        <select id="edit-enc" class="form-control mb-3">${opts}</select>
+                    </div>
+                    <div class="col-md-6">
+                        <label>Tipo de actividad:</label>
+                        <select id="edit-tipo" class="form-control mb-3">
+                            <option>Resolución de caso clínico</option>
+                            <option>Preguntas a desarrollar</option>
+                        </select>
+                    </div>
+                </div>
+                <label>Contenido:</label>
+                <input type="text" id="edit-contenido" class="form-control mb-3">
+                <label>Directrices pedagógicas:</label>
+                <select id="edit-directriz" class="form-control mb-3" onchange="document.getElementById('edit-directriz-manual').style.display=(this.value=='nueva'?'block':'none')">
+                    <option>Formule dos preguntas acerca del contenido y responda argumentando</option>
+                    <option>Formule una hipótesis que vincule la teoría del contenido con una experiencia terapéutica propia. Justifique</option>
+                    <option>Analizando el caso que propuesta de abordaje formularia. Justifique con argumento</option>
+                    <option>A qué conclusiones llega luego de leer el contenido brindado? Justifique.</option>
+                    <option>En el caso del contenido se utilizan algunas técnicas de abordaje. Cree Ud. que son adecuadas? Proponga al menos una alternativa adicional y justifique.</option>
+                    <option value="nueva">Agregar una directriz.</option>
+                </select>
+                <input type="text" id="edit-directriz-manual" class="form-control mb-3" style="display:none;" placeholder="Escriba la directriz...">
+                <button class="btn btn-lg" style="background-color: #ffd700; font-weight: bold; width: 100%; margin-top: 20px;" onclick="window.generarExamenForm()">GENERAR EXAMEN</button>
+            </div>
+            <div id="area-examen-generado" style="margin-top: 30px; width: 100%; max-width: 1200px; margin-left: auto; margin-right: auto;"></div>
+        </div>
+    `;
+};
+window.generarExamenForm = function() {
+    const encEl = document.getElementById('edit-enc');
+    const encId = parseInt(encEl.value);
+    const encText = encEl.options[encEl.selectedIndex].text;
+    const tipo = document.getElementById('edit-tipo').value;
+    const cont = document.getElementById('edit-contenido').value;
+    const dirVal = document.getElementById('edit-directriz').value;
+    const dir = (dirVal === 'nueva') ? document.getElementById('edit-directriz-manual').value : dirVal;
+
+    document.getElementById('area-examen-generado').innerHTML = `
+        <div style="background-color: #fff; border: 3px solid #ffd700; padding: 30px; width: 100%;">
+            <h4>Examen Generado</h4>
+            <hr>
+            <p><strong>Encuentro:</strong> <span id="gen-enc">${encText}</span></p>
+            <p><strong>Tipo:</strong> <span id="gen-tipo">${tipo}</span></p>
+            <p><strong>Contenido:</strong> <span id="gen-cont">${cont}</span></p>
+            <p><strong>Directriz:</strong> <span id="gen-dir">${dir}</span></p>
+            <label>Respuesta:</label>
+            <textarea class="form-control mb-3" rows="6"></textarea>
+            <button class="btn btn-success btn-lg" onclick="guardarTestEnBase(${encId})">APROBAR Y GUARDAR</button>
+            <button class="btn btn-danger btn-lg" onclick="this.parentElement.parentElement.innerHTML=''">ELIMINAR</button>
+        </div>
+    `;
+};
+
+window.guardarTestEnBase = function(encId) {
+    // IMPORTANTE: Estos IDs deben coincidir con los que escribes en innerHTML en generarExamenForm
+    const testData = {
+        encuentro: document.getElementById('gen-enc').innerText,
+        tipo: document.getElementById('gen-tipo').innerText,
+        contenido: document.getElementById('gen-cont').innerText, // Captura el texto del span
+        directriz: document.getElementById('gen-dir').innerText,
+        publicado: true
+    };
+
+    // Asegurar persistencia en db global y localStorage
+    if (typeof db === 'undefined') db = {};
+    if (!db.testsIA) db.testsIA = {};
+    
+    db.testsIA[encId] = testData;
+    localStorage.setItem('DB_CLINICA', JSON.stringify(db));
+    
+    alert("Test guardado exitosamente. Ya está disponible para el alumno.");
+};
+
+window.vTestsAlumno = function() {
+    const v = document.getElementById('main-view');
+    v.style.display = 'block';
+    
+    let botones = "";
+    for(let i = 1; i <= 10; i++) {
+        // CORRECCIÓN: Llamada a la función inteligente
+        botones += `<button class="tecla-test" onclick="abrirTestAlumno(${i})">${i}</button>`;
+    }
+
+    v.innerHTML = `
+        <div style="background-color: #000; min-height: 100vh; padding: 40px; display: flex; flex-direction: column; align-items: center; color: #fff;">
+            <h2 style="margin-bottom: 30px;">Selección de Test</h2>
+            <div id="cuadro-test" style="background-color: #000; border: 3px solid #ff0000; padding: 40px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 20px; max-width: 800px; width: 100%;">
+                ${botones}
+            </div>
+        </div>
+        <style>
+            .tecla-test {
+                width: 80px;
+                height: 80px;
+                background-color: #000;
+                border: 2px solid #fff;
+                color: #fff;
+                font-size: 24px;
+                font-weight: bold;
+                cursor: pointer;
+                transition: all 0.3s ease;
+            }
+            .tecla-test:hover {
+                box-shadow: 0 0 15px 5px #ffd700;
+                border-color: #ffd700;
+                color: #ffd700;
+            }
+        </style>
+    `;
+};
+window.vNotificacionesAlu = function() {
+    const v = document.getElementById('main-view');
+    v.style.display = 'block';
+
+    const db = JSON.parse(localStorage.getItem('DB_CLINICA')) || { calificaciones: [] };
+    
+    // Obtener nombre y DNI de la sesión actual
+    const miNombre = String(sesion.nombre).toUpperCase().trim();
+    const miDNI = String(sesion.dni);
+    
+    // FILTRO INTELIGENTE: Busca por DNI O por nombre
+    let misRegistros = db.calificaciones.filter(c => {
+        const nombreEnBase = String(c.alumno || '').toUpperCase().trim();
+        const dniEnBase = String(c.dni || '');
+        return dniEnBase === miDNI || nombreEnBase === miNombre;
+    });
+
+    let h = `
+        <div style="background-color: #000; padding: 40px; color: #fff;">
+            <h2 style="color: #ff00ff;">Mis Calificaciones</h2>
+            <table class="table table-bordered text-light mt-4">
+                <thead>
+                    <tr>
+                        <th>Encuentro</th>
+                        <th>Nota Test</th>
+                        <th>Nota Taller</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+
+    if (misRegistros.length > 0) {
+        misRegistros.forEach(n => {
+            h += `<tr>
+                    <td>${n.encuentro || '-'}</td>
+                    <td>${n.notaTest || 0}</td>
+                    <td>${n.notaTaller || 0}</td>
+                </tr>`;
+        });
+    } else {
+        h += `<tr><td colspan="3" style="text-align:center;">No se encontraron registros para: ${miNombre}</td></tr>`;
+    }
+
+    h += `</tbody></table>
+          <button class="btn btn-secondary mt-3" onclick="vHome()">Volver</button>
+          </div>`;
+    
+    v.innerHTML = h;
+};
+
+// --- 1. ESTADO GLOBAL PARA EL MODAL ---
+// --- 1. ESTADO GLOBAL ---
+window.estadoEvaluacion = { actual: null, paso: 'nota', nota: '', feedback: '' };
+
+
+
+// Función para enviar al alumno individualmente
+window.exportarAlAlumnoIndividual = function(encId) {
+    const db = JSON.parse(localStorage.getItem('DB_CLINICA')) || { notas: [] };
+    const r = db.respuestasIA[encId];
+    const g = JSON.parse(localStorage.getItem('EVALUACIONES_DATA'))[encId];
+
+    if (!g || g.nota === '-') return alert("Primero debe evaluar este test.");
+
+    if (!db.notas) db.notas = [];
+
+    // Creamos un nuevo objeto con el formato que tu base de datos ya reconoce
+    const nuevoRegistro = {
+        id: `${r.dni}-${r.encuentro}-TEST`, // Generamos un ID único
+        dni: r.dni,
+        titulo: r.encuentro + " (Test)",
+        valor: g.nota,
+        feedback: g.feedback,
+        fecha: new Date().toLocaleDateString()
+    };
+
+    db.notas.push(nuevoRegistro);
+    localStorage.setItem('DB_CLINICA', JSON.stringify(db));
+    alert("Test enviado a la base de datos de notas exitosamente.");
+};
+
+// --- 3. LÓGICA DEL MODAL ---
+window.abrirEvaluar = function(encId) {
+    estadoEvaluacion.actual = encId;
+    estadoEvaluacion.paso = 'nota';
+    document.getElementById('modal-titulo').innerText = "Ingrese Nota:";
+    document.getElementById('modal-input').value = "";
+    document.getElementById('miModal').style.display = 'block';
+};
+
+window.procesarModal = function() {
+    const valor = document.getElementById('modal-input').value;
+    const encId = estadoEvaluacion.actual;
+    if (estadoEvaluacion.paso === 'nota') {
+        estadoEvaluacion.nota = valor;
+        estadoEvaluacion.paso = 'feedback';
+        document.getElementById('modal-titulo').innerText = "Ingrese Feedback:";
+        document.getElementById('modal-input').value = "";
+    } else {
+        estadoEvaluacion.feedback = valor;
+        document.getElementById(`td-nota-${encId}`).innerText = estadoEvaluacion.nota;
+        document.getElementById(`td-feedback-${encId}`).innerText = estadoEvaluacion.feedback;
+        document.getElementById('miModal').style.display = 'none';
+        alert("Cargado. Ahora presiona 'Guardar'.");
+    }
+};
+
+// --- 4. PERSISTENCIA Y EXPORTACIÓN ---
+window.guardarEnBD = function(encId) {
+    const nota = document.getElementById(`td-nota-${encId}`).innerText;
+    const feedback = document.getElementById(`td-feedback-${encId}`).innerText;
+    let db = JSON.parse(localStorage.getItem('EVALUACIONES_DATA')) || {};
+    db[encId] = { nota, feedback };
+    localStorage.setItem('EVALUACIONES_DATA', JSON.stringify(db));
+    alert("Guardado en BD.");
+};
+window.exportarACalificaciones = function(encId) {
+    const evalData = JSON.parse(localStorage.getItem('EVALUACIONES_DATA')) || {};
+    if (!evalData[encId]) return alert("Primero debes Guardar en BD.");
+
+    let fullDb = JSON.parse(localStorage.getItem('DB_CLINICA')) || {};
+    
+    // Asegurar estructura mínima necesaria
+    if (!fullDb.respuestasIA) fullDb.respuestasIA = {};
+    if (!fullDb.calificaciones || !Array.isArray(fullDb.calificaciones)) fullDb.calificaciones = [];
+    
+    const res = fullDb.respuestasIA[encId];
+    
+    if (res) {
+        fullDb.calificaciones.push({
+            alumno: res.alumno || "Sin nombre",
+            encuentro: res.encuentro || "Sin encuentro",
+            notaTest: evalData[encId].nota,
+            notaTaller: 0
+        });
+        localStorage.setItem('DB_CLINICA', JSON.stringify(fullDb));
+        alert("Exportado con éxito.");
+        if (typeof vCalificacionesAdmin === 'function') vCalificacionesAdmin();
+    } else {
+        alert("Error: No existen respuestas para este ID en la base de datos.");
+    }
+};
+
+// --- FUNCIONES COMPLETAS Y CORREGIDAS ---
+window.vAuditoriaTalleres= function() {
+    const v = document.getElementById('main-view');
+    v.style.display = 'block';
+
+    const alumnos = db.participantes || [];
+    const opciones = alumnos.map(p => 
+        `<option value="${p.dni}">${p.nombre} ${p.apellido}</option>`
+    ).join('');
+
+    v.innerHTML = `
+        <div style="padding: 30px; background-color: #000; border: 3px solid #ccff00; color: #fff; border-radius: 10px;">
+            <h2 style="margin-bottom: 20px;">Auditoría de Talleres</h2>
+            <label>Alumno:</label>
+            <select id="sel-alumno" class="form-control mb-3">
+                <option value="">Seleccione estudiante...</option>
+                ${opciones}
+            </select>
+            <label>Encuentro:</label>
+            <select id="sel-encuentro" class="form-control mb-3">
+                ${[1,2,3,4,5,6,7,8,9,10].map(n => `<option value="${n}">Encuentro ${n}</option>`).join('')}
+            </select>
+            <table class="table table-dark table-bordered">
+                <thead><tr><th>Indicador</th><th>Exc(4)</th><th>Adec(3)</th><th>Proc(2)</th><th>Ins(1)</th></tr></thead>
+                <tbody>
+                    ${['Integración','Abordaje','Técnicas','Reflexión'].map((texto, i) => `
+                    <tr><td>${texto}</td>
+                        <td><input type="radio" name="ind${i+1}" value="4"></td>
+                        <td><input type="radio" name="ind${i+1}" value="3"></td>
+                        <td><input type="radio" name="ind${i+1}" value="2"></td>
+                        <td><input type="radio" name="ind${i+1}" value="1"></td>
+                    </tr>`).join('')}
+                </tbody>
+            </table>
+            
+            <button class="btn btn-warning" onclick="calcTaller()">Calcular Puntaje</button>
+            <div id="res-puntaje" style="display:inline-block; border: 2px solid #fff; padding: 5px; margin-left: 10px;">0</div>
+            <hr>
+            <button class="btn btn-primary" onclick="evaluarTaller()">Evaluar</button>
+            <button class="btn btn-success" onclick="guardarTallerEnBD()">Guardar en base de datos</button>
+            <button class="btn btn-secondary" onclick="enviarAlAlumno()">Enviar al alumno</button>
+            <button class="btn btn-info" onclick="exportarAAdministracion()">Exportar a administración</button>
+            
+            <div id="res-eval" class="mt-4"></div>
+        </div>`;
+};
+
+window.calcTaller = function() {
+    let total = 0;
+    // Buscamos los radio buttons del 1 al 4
+    for(let i=1; i<=4; i++) {
+        const sel = document.querySelector(`input[name="ind${i}"]:checked`);
+        if (sel) total += parseInt(sel.value);
+    }
+    const el = document.getElementById('res-puntaje');
+    if (el) el.innerText = total;
+    return total;
+};
+
+window.evaluarTaller = function() {
+    const total = window.calcTaller();
+    let nota, feedback;
+    if (total >= 15) { nota = 10; feedback = "Nivel de Competencia Avanzada..."; }
+    else if (total >= 10) { nota = 7; feedback = "Nivel de Competencia Competente..."; }
+    else { nota = 4; feedback = "Nivel Insuficiente..."; }
+    
+    const divRes = document.getElementById('res-eval');
+    if (divRes) {
+        divRes.innerHTML = `<table class="table table-bordered text-light">
+            <tr><th>Nota</th><td>${nota}</td></tr>
+            <tr><th>Feedback</th><td>${feedback}</td></tr>
+        </table>`;
+    }
+};
+
+window.guardarTallerEnBD = function() {
+    const selA = document.getElementById('sel-alumno');
+    const selE = document.getElementById('sel-encuentro');
+    const divRes = document.getElementById('res-eval');
+    
+    if (!selA.value) return alert("Por favor, seleccione un alumno.");
+    const tabla = divRes.querySelector('table');
+    if (!tabla) return alert("Primero debe realizar la evaluación.");
+
+    const nuevoRegistro = {
+        alumno: selA.options[selA.selectedIndex].text,
+        encuentro: selE.options[selE.selectedIndex].text,
+        notaTaller: tabla.rows[0].cells[1].innerText,
+        feedbackTaller: tabla.rows[1].cells[1].innerText,
+        fecha: new Date().toLocaleDateString()
+    };
+
+    if (!db.calificacionesTaller) db.calificacionesTaller = [];
+
+    const index = db.calificacionesTaller.findIndex(c => 
+        c.alumno === nuevoRegistro.alumno && c.encuentro === nuevoRegistro.encuentro
+    );
+
+    if (index !== -1) db.calificacionesTaller[index] = nuevoRegistro;
+    else db.calificacionesTaller.push(nuevoRegistro);
+
+    guardar();
+    alert("Datos guardados correctamente: " + nuevoRegistro.alumno);
+};
+// Aseguramos que la función sea global y esté fuera de cualquier otra
+window.vCalificacionesAdmin = function() {
+    const v = document.getElementById('main-view');
+    v.style.display = 'block';
+
+    const rawData = localStorage.getItem('DB_CLINICA');
+    const database = rawData ? JSON.parse(rawData) : { calificaciones: [] };
+    const califs = database.calificaciones || [];
+
+    const mapa = {};
+    califs.forEach(c => {
+        let nombreNormalizado = String(c.alumno || '').trim().toUpperCase().split(' ').sort().join(' ');
+        let numEncuentro = String(c.encuentro || '').replace(/[^0-9]/g, '');
+        let llave = `${nombreNormalizado}_${numEncuentro}`;
+        
+        if (!mapa[llave]) {
+            mapa[llave] = { 
+                alumno: nombreNormalizado, 
+                encuentro: "Encuentro " + numEncuentro, 
+                notaTest: '-', 
+                notaTaller: '-' 
+            };
+        }
+        if (c.notaTest && c.notaTest != 0 && c.notaTest != '0') mapa[llave].notaTest = c.notaTest;
+        if (c.notaTaller && c.notaTaller != 0 && c.notaTaller != '0') mapa[llave].notaTaller = c.notaTaller;
+    });
+
+    let filas = Object.values(mapa).map(c => `
+        <tr>
+            <td>${c.alumno}</td>
+            <td>${c.encuentro}</td>
+            <td><input type="text" value="${c.notaTest}" class="form-control" style="width: 70px;"></td>
+            <td><input type="number" value="${c.notaTaller}" class="form-control" style="width: 70px;"></td>
+            <td>
+                <button class="btn btn-sm btn-success" onclick="guardarFila(this)">Guardar</button>
+                <button class="btn btn-sm" style="background-color: #ffb6c1; color: #000;" onclick="alert('Exportación en desarrollo')">Exportar</button>
+            </td>
+        </tr>
+    `).join('');
+
+    // AQUÍ ESTABA EL ERROR: EL HTML DEBE ESTAR COMPLETO
+    v.innerHTML = `
+        <div style="padding: 30px; background-color: #000; border: 3px solid #00d4ff; color: #fff; border-radius: 10px;">
+            <h2 style="margin-bottom: 20px; color: #00d4ff;">Gestión de Calificaciones</h2>
+            <table class="table table-dark table-bordered">
+                <thead>
+                    <tr>
+                        <th>Estudiante</th>
+                        <th>Encuentro</th>
+                        <th>Nota Test</th>
+                        <th>Nota Taller</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${filas || '<tr><td colspan="5" class="text-center">No hay registros para mostrar.</td></tr>'}
+                </tbody>
+            </table>
+        </div>`;
+};
+// Asegúrate de que esta función esté FUERA de vCalificacionesAdmin
+window.guardarFila = function(btn) {
+    const row = btn.parentNode.parentNode;
+    const alumno = row.cells[0].innerText;
+    const encuentro = row.cells[1].innerText;
+    
+    // Obtenemos los valores de los inputs
+    const notaTest = row.cells[2].querySelector('input').value;
+    const notaTaller = row.cells[3].querySelector('input').value;
+
+    const storedDb = localStorage.getItem('DB_CLINICA');
+    const db = storedDb ? JSON.parse(storedDb) : { calificaciones: [] };
+    
+    // Normalizamos el encuentro para comparar
+    const numEncuentro = encuentro.replace(/[^0-9]/g, '');
+
+    // Buscamos si existe un registro (para no duplicar)
+    let registro = db.calificaciones.find(c => {
+        let nombreC = String(c.alumno || '').trim().toUpperCase().split(' ').sort().join(' ');
+        let encuentroC = String(c.encuentro || '').replace(/[^0-9]/g, '');
+        return nombreC === alumno && encuentroC === numEncuentro;
+    });
+
+    if (registro) {
+        // Actualizamos el existente
+        registro.notaTest = notaTest;
+        registro.notaTaller = notaTaller;
+    } else {
+        // Si no existe, lo agregamos (aunque con la lógica de consolidación, esto casi no debería ocurrir)
+        db.calificaciones.push({ alumno, encuentro, notaTest, notaTaller });
+    }
+
+    localStorage.setItem('DB_CLINICA', JSON.stringify(db));
+    alert('Datos guardados para: ' + alumno);
+    
+    // Refrescamos la vista para ver los cambios
+    window.vCalificacionesAdmin();
+};
+
+
+// Estilos para el Switch y el Formulario (puedes poner esto en tu bloque <style>)
+/*
+.switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #0a1f44; transition: .4s; border-radius: 26px; }
+.slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: #c5a059; transition: .4s; border-radius: 50%; }
+input:checked + .slider { background-color: #0a1f44; }
+input:checked + .slider:before { transform: translateX(24px); }
+*/
+window.guardarAsistencia = function() {
+    const encuentro = document.getElementById('asist-encuentro').value;
+    if (!encuentro) { return alert("Seleccione un encuentro primero"); }
+
+    // 1. Cargamos DB
+    let db = JSON.parse(localStorage.getItem('cc_v38_db')) || { asistencias: [] };
+    
+    // 2. Traemos todos los checkboxes de la tabla
+    const checkboxes = document.querySelectorAll('.asist-toggle');
+    
+    checkboxes.forEach(cb => {
+        const dni = cb.getAttribute('data-dni');
+        const estaPresente = cb.checked;
+        
+        // Buscamos si ya existe
+        let index = db.asistencias.findIndex(a => a.dni == dni && a.encuentro == encuentro);
+        
+        if (estaPresente) {
+            if (index === -1) {
+                // Si no existe, lo creamos
+                db.asistencias.push({ dni: dni, encuentro: encuentro, estado: 1 });
+            } else {
+                // Si existe, nos aseguramos que estado sea 1
+                db.asistencias[index].estado = 1;
+            }
+        } else {
+            // Si desmarcamos, eliminamos el registro de la asistencia
+            if (index !== -1) {
+                db.asistencias.splice(index, 1);
+            }
+        }
+    });
+
+    // 3. Guardamos
+    localStorage.setItem('cc_v38_db', JSON.stringify(db));
+    alert("✅ Asistencia del encuentro guardada correctamente.");
+    console.log("DB Actualizada:", db.asistencias);
+};
+
+
+
+
+
+
+window.vPagosAdmin = function() {
+    const v = document.getElementById('main-view');
+    v.style.display = 'block';
+
+    const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+    const alumnos = db.participantes || [];
+
+    v.innerHTML = `
+        <div style="padding: 30px; border: 4px solid #c5a059; border-radius: 10px; color: #0a1f44; background: #fff; font-family: sans-serif;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3>💰 Gestión de Tesorería: ADMINISTRACIÓN</h3>
+                <small style="color: #64748b;">* Los cambios solo impactarán al alumno tras presionar "Exportar"</small>
+            </div>
+            
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <label>Periodo (Mes):</label>
+                    <select id="pagos-mes" class="form-control">
+                        ${meses.map(m => `<option value="${m}">${m}</option>`).join('')}
+                    </select>
+                </div>
+            </div>
+
+            <table class="table table-hover">
+                <thead style="background-color: #0a1f44; color: #c5a059;">
+                    <tr>
+                        <th>Estudiante</th>
+                        <th>Estado</th>
+                        <th>Medio</th>
+                        <th>Monto</th>
+                        <th>Obs.</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody id="body-pagos-admin">
+                    ${alumnos.map(p => `
+                        <tr id="row-pagos-${p.dni}">
+                            <td>${p.apellido}, ${p.nombre}</td>
+                            <td>
+                                <select class="form-control estado-pago" data-dni="${p.dni}">
+                                    <option value="Pendiente">Pendiente</option>
+                                    <option value="Pagado">Pagado</option>
+                                    <option value="Bonificado">Bonificado</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select class="form-control medio-pago">
+                                    <option value="Efectivo">Efectivo</option>
+                                    <option value="Transferencia">Transferencia</option>
+                                </select>
+                            </td>
+                            <td><input type="number" class="form-control monto-pago" placeholder="$" value="0"></td>
+                            <td><input type="text" class="form-control obs-pago" placeholder="..."></td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-warning" onclick="alert('Edición habilitada para: ${p.apellido}')" title="Modificar registro">✏️</button>
+                            </td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+            
+            <div class="mt-4" style="border-top: 1px solid #ddd; padding-top: 20px;">
+                <button class="btn" style="background-color: #0a1f44; color: #c5a059;" onclick="guardarPagos()">Guardar Cambios (Admin)</button>
+                <button class="btn" style="background-color: #c5a059; color: #fff;" onclick="exportarPagosAAlumnos()">Exportar/Actualizar a Alumno</button>
+            </div>
+        </div>`;
+};
+
+window.guardarPagos = function() {
+    // Aquí se actualizaría el objeto en memoria/localStorage
+    alert('Cambios guardados localmente. Los alumnos aún no ven esta actualización.');
+};
+
+window.exportarPagosAAlumnos = function() {
+    // Esta función será el "Push" de datos hacia las vistas de alumnos
+    alert('Sincronización completada: Los datos han sido actualizados en los perfiles de los alumnos.');
+    console.log("Datos de pagos exportados y vinculados.");
+};
+window.vPagosAlumnoView = function() {
+    const v = document.getElementById('main-view');
+    v.style.display = 'block';
+
+    // Meses para mostrar
+    const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+
+    // Datos simulados (esto se conectará luego con la base de datos de pagos)
+    const misPagos = {
+        "Enero": { estado: "Pagado", medio: "Transferencia", monto: 50000 },
+        "Febrero": { estado: "Pagado", medio: "Efectivo", monto: 50000 },
+        "Marzo": { estado: "Bonificado", medio: "-", monto: 0 },
+        "Abril": { estado: "Pendiente", medio: "-", monto: 0 }
+    };
+
+    v.innerHTML = `
+        <div style="padding: 30px; background-color: #fff; border: 4px solid #c5a059; border-radius: 10px; color: #0a1f44; font-family: sans-serif;">
+            <div style="border-bottom: 3px solid #0a1f44; margin-bottom: 20px;">
+                <h3 style="color: #0a1f44; text-transform: uppercase;">Estado de Cuenta: Pagos y Aranceles</h3>
+                <p><strong>Estudiante:</strong> ${sesion.nombre || '...'}</p>
+            </div>
+
+            <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin-bottom: 25px; border: 1px solid #c5a059;">
+                <h4 style="margin-top:0;">Resumen Financiero</h4>
+                <p>Tu estado actual: <span style="font-weight:bold; color:#0a1f44;">Al día con los meses registrados.</span></p>
+            </div>
+
+            <table class="table table-striped">
+                <thead style="background-color: #0a1f44; color: #c5a059;">
+                    <tr><th>Mes</th><th>Estado</th><th>Medio de Pago</th><th>Monto</th></tr>
+                </thead>
+                <tbody>
+                    ${meses.map(m => {
+                        const info = misPagos[m] || { estado: "Pendiente", medio: "-", monto: "-" };
+                        const colorEstado = info.estado === "Pagado" ? "green" : (info.estado === "Pendiente" ? "red" : "#c5a059");
+                        return `
+                        <tr>
+                            <td>${m}</td>
+                            <td style="color: ${colorEstado}; font-weight: bold;">${info.estado}</td>
+                            <td>${info.medio}</td>
+                            <td>${info.monto > 0 ? '$' + info.monto : '-'}</td>
+                        </tr>`;
+                    }).join('')}
+                </tbody>
+            </table>
+            
+            <p style="font-size: 0.8em; margin-top: 20px; color: #64748b;">
+                * Si observas alguna discrepancia en tu registro, por favor solicita la revisión administrativa.
+            </p>
+        </div>`;
+};
+window.abrirTestAlumno = function(index) {
+    const storedDb = localStorage.getItem('DB_CLINICA');
+    const localDb = storedDb ? JSON.parse(storedDb) : (typeof db !== 'undefined' ? db : {});
+    const test = (localDb.testsIA && localDb.testsIA[index]) ? localDb.testsIA[index] : null;
+
+    if (test) {
+        const v = document.getElementById('main-view');
+        const contenidoSeguro = test.contenido ? test.contenido.replace(/\n/g, '<br>') : "Sin contenido";
+        
+        v.innerHTML = `
+            <div style="padding: 30px; background: #fff; border: 3px solid #0a1f44; border-radius: 10px; max-width: 800px; margin: auto;">
+                <h3 style="color: #0a1f44;">${test.encuentro}</h3>
+                <p><strong>Tipo:</strong> ${test.tipo}</p>
+                <hr>
+                <p><strong>Contenido:</strong><br><div style="padding: 10px; background: #fdfdfd; border: 1px solid #ccc;">${contenidoSeguro}</div></p>
+                <div style="background: #f8f9fa; padding: 15px; border-left: 5px solid #c5a059;">
+                    <p><strong>Directriz:</strong><br>${test.directriz}</p>
+                </div>
+                <label>Tu Respuesta:</label>
+                <textarea id="respuesta-alumno" class="form-control mt-3" rows="6" placeholder="Escribe aquí..."></textarea>
+                <button class="btn btn-primary mt-3" onclick="guardarRespuestaAlumno(${index})">ENVIAR RESPUESTA</button>
+            </div>
+        `;
+    } else {
+        alert("No hay test disponible aún para este encuentro.");
+    }
+};
+window.guardarRespuestaAlumno = function(encId) {
+    const respuesta = document.getElementById('respuesta-alumno').value;
+    if (!respuesta.trim()) return alert("Por favor, escribe una respuesta.");
+
+    const nombreReal = localStorage.getItem('USER_NAME') || "Estudiante";
+    let storedDb = localStorage.getItem('DB_CLINICA');
+    let localDb = storedDb ? JSON.parse(storedDb) : { respuestasIA: {} };
+    
+    // REPARACIÓN AUTOMÁTICA SI LA CARPETA NO EXISTE
+    if (!localDb.respuestasIA) localDb.respuestasIA = {};
+    
+    localDb.respuestasIA[encId] = {
+        alumno: nombreReal, 
+        encuentro: encId,
+        texto: respuesta,
+        fecha: new Date().toLocaleDateString()
+    };
+    
+    localStorage.setItem('DB_CLINICA', JSON.stringify(localDb));
+    alert("Respuesta enviada con éxito.");
+};
+window.estadoEvaluacion = { actual: null, paso: 'nota', nota: '', feedback: '' };
+
+
+
+window.abrirEvaluar = function(encId) {
+    estadoEvaluacion.actual = encId;
+    estadoEvaluacion.paso = 'nota';
+    document.getElementById('modal-titulo').innerText = "Ingrese Nota:";
+    document.getElementById('modal-input').value = "";
+    document.getElementById('miModal').style.display = 'block';
+};
+
+window.procesarModal = function() {
+    const valor = document.getElementById('modal-input').value;
+    const encId = estadoEvaluacion.actual;
+    if (estadoEvaluacion.paso === 'nota') {
+        estadoEvaluacion.nota = valor;
+        estadoEvaluacion.paso = 'feedback';
+        document.getElementById('modal-titulo').innerText = "Ingrese Feedback:";
+        document.getElementById('modal-input').value = "";
+    } else {
+        estadoEvaluacion.feedback = valor;
+        document.getElementById(`td-nota-${encId}`).innerText = estadoEvaluacion.nota;
+        document.getElementById(`td-feedback-${encId}`).innerText = estadoEvaluacion.feedback;
+        document.getElementById('miModal').style.display = 'none';
+        alert("Cargado. Ahora presiona 'Guardar'.");
+    }
+};
+
+window.guardarEnBD = function(encId) {
+    const nota = document.getElementById(`td-nota-${encId}`).innerText;
+    const feedback = document.getElementById(`td-feedback-${encId}`).innerText;
+    let db = JSON.parse(localStorage.getItem('EVALUACIONES_DATA')) || {};
+    db[encId] = { nota, feedback };
+    localStorage.setItem('EVALUACIONES_DATA', JSON.stringify(db));
+    alert("Guardado en BD.");
+};
+window.exportarACalificaciones = function(encId) {
+    const evalData = JSON.parse(localStorage.getItem('EVALUACIONES_DATA')) || {};
+    if (!evalData[encId]) return alert("Primero debes Guardar en BD.");
+    
+    let fullDb = JSON.parse(localStorage.getItem('DB_CLINICA')) || { respuestasIA: {}, calificaciones: [] };
+    
+    // REPARACIÓN AUTOMÁTICA DE ESTRUCTURA
+    if (!fullDb.respuestasIA) fullDb.respuestasIA = {};
+    if (!fullDb.calificaciones || !Array.isArray(fullDb.calificaciones)) fullDb.calificaciones = [];
+    
+    const res = fullDb.respuestasIA[encId];
+    if (!res) return alert("Error: No existen respuestas para este ID.");
+    
+    fullDb.calificaciones.push({
+        alumno: res.alumno,
+        encuentro: res.encuentro,
+        notaTest: evalData[encId].nota,
+        notaTaller: 0
+    });
+    
+    localStorage.setItem('DB_CLINICA', JSON.stringify(fullDb));
+    alert("Exportado a Calificaciones.");
+    if (typeof vCalificacionesAdmin === 'function') vCalificacionesAdmin();
+};
+window.exportarAlTaller = function(encId) {
+    // 1. Obtenemos nota y feedback del formulario de Taller
+    // Asegúrate de que los IDs en tu tabla sean 'td-nota-taller-' + encId y 'td-feedback-taller-' + encId
+    const notaTaller = document.getElementById(`td-nota-taller-${encId}`)?.innerText || "0";
+    const feedbackTaller = document.getElementById(`td-feedback-taller-${encId}`)?.innerText || "";
+    
+    let fullDb = JSON.parse(localStorage.getItem('DB_CLINICA')) || { respuestasIA: {}, calificaciones: [] };
+    
+    // Auto-reparación de seguridad
+    if (!fullDb.calificaciones || !Array.isArray(fullDb.calificaciones)) fullDb.calificaciones = [];
+    
+    // 2. Buscamos si ya existe una entrada para este alumno/encuentro en Calificaciones
+    // Si existe, la actualizamos; si no, creamos una nueva
+    const res = fullDb.respuestasIA[encId];
+    if (!res) return alert("Error: No se encontraron datos del alumno para este ID.");
+
+    let calEntry = fullDb.calificaciones.find(c => c.encuentro === encId && c.alumno === res.alumno);
+    
+    if (calEntry) {
+        calEntry.notaTaller = notaTaller;
+        calEntry.feedbackTaller = feedbackTaller;
+    } else {
+        fullDb.calificaciones.push({
+            alumno: res.alumno,
+            encuentro: res.encuentro,
+            notaTest: 0, // El test se maneja aparte
+            notaTaller: notaTaller,
+            feedbackTaller: feedbackTaller
+        });
+    }
+    
+    localStorage.setItem('DB_CLINICA', JSON.stringify(fullDb));
+    alert("Taller exportado a Administración con éxito.");
+    
+    // Refrescar vista si existe
+    if (typeof vCalificacionesAdmin === 'function') vCalificacionesAdmin();
+};
+window.exportarAAdministracion = function() {
+    // 1. Verificamos que existan datos persistidos en la memoria de auditoría
+    if (!db.calificacionesTaller || db.calificacionesTaller.length === 0) {
+        return alert("No hay datos de talleres guardados para exportar.");
+    }
+
+    // 2. Cargamos la DB principal directamente del localStorage para asegurar integridad
+    let fullDb = JSON.parse(localStorage.getItem('DB_CLINICA')) || { respuestasIA: {}, calificaciones: [] };
+    
+    // Seguridad: inicializar si es necesario
+    if (!fullDb.calificaciones || !Array.isArray(fullDb.calificaciones)) fullDb.calificaciones = [];
+
+    let exportados = 0;
+    let actualizados = 0;
+
+    // 3. Procesamos los datos
+    db.calificacionesTaller.forEach(taller => {
+        // Buscamos coincidencia en la tabla calificaciones de la DB principal
+        let calEntry = fullDb.calificaciones.find(c => 
+            c.alumno === taller.alumno && c.encuentro === taller.encuentro
+        );
+
+        if (calEntry) {
+            // Caso: Existe -> Actualizamos la nota
+            calEntry.notaTaller = taller.notaTaller;
+            actualizados++;
+        } else {
+            // Caso: No existe -> Creamos nuevo registro
+            fullDb.calificaciones.push({
+                alumno: taller.alumno,
+                encuentro: taller.encuentro,
+                notaTest: 0, 
+                notaTaller: taller.notaTaller,
+                feedbackTaller: ""
+            });
+            exportados++;
+        }
+    });
+
+    // 4. Guardamos en localStorage y actualizamos la referencia global
+    localStorage.setItem('DB_CLINICA', JSON.stringify(fullDb));
+    db = fullDb; // Sincronizamos la variable global por si se usa en otros lados
+    
+    alert(`Exportación finalizada: ${exportados} nuevos, ${actualizados} actualizados.`);
+};
+// Aseguramos que la función sea global y accesible por el DOM
+window.enviarAlAlumno = function() {
+    const selA = document.getElementById('sel-alumno');
+    const selE = document.getElementById('sel-encuentro');
+    const divRes = document.getElementById('res-eval');
+    
+    if (!selA || !selA.value) return alert("Error: Seleccione un alumno.");
+    const tabla = divRes.querySelector('table');
+    if (!tabla) return alert("Primero debe realizar la evaluación y presionar 'Evaluar'.");
+
+    // Datos que enviamos a la DB principal
+    const datosEnvio = {
+        dni: selA.value, 
+        alumno: selA.options[selA.selectedIndex].text,
+        encuentro: selE.options[selE.selectedIndex].text,
+        notaTaller: tabla.rows[0].cells[1].innerText,
+        feedbackTaller: tabla.rows[1].cells[1].innerText
+    };
+
+    // Accedemos a la base de datos principal 'DB_CLINICA'
+    let fullDb = JSON.parse(localStorage.getItem('DB_CLINICA')) || { calificaciones: [] };
+    if (!fullDb.calificaciones) fullDb.calificaciones = [];
+
+    // Buscamos si ya existe el registro para este alumno y encuentro
+    let index = fullDb.calificaciones.findIndex(c => 
+        c.dni === datosEnvio.dni && c.encuentro === datosEnvio.encuentro
+    );
+
+    if (index !== -1) {
+        fullDb.calificaciones[index].notaTaller = datosEnvio.notaTaller;
+        fullDb.calificaciones[index].feedbackTaller = datosEnvio.feedbackTaller;
+    } else {
+        fullDb.calificaciones.push({
+            dni: datosEnvio.dni,
+            alumno: datosEnvio.alumno,
+            encuentro: datosEnvio.encuentro,
+            notaTest: 0,
+            feedbackTest: "",
+            notaTaller: datosEnvio.notaTaller,
+            feedbackTaller: datosEnvio.feedbackTaller
+        });
+    }
+
+    // Persistimos
+    localStorage.setItem('DB_CLINICA', JSON.stringify(fullDb));
+    alert("Vinculación exitosa: Datos enviados al perfil del estudiante.");
+};
+window.vAuditoriaTest = function() {
+    const v = document.getElementById('main-view');
+    v.style.display = 'block';
+
+    const localDb = JSON.parse(localStorage.getItem('DB_CLINICA')) || {};
+    const respuestas = localDb.respuestasIA || {};
+    const evaluaciones = JSON.parse(localStorage.getItem('EVALUACIONES_DATA')) || {};
+
+    let filas = "";
+    for (let encId in respuestas) {
+        const r = respuestas[encId];
+        const g = evaluaciones[encId] || { nota: '-', feedback: '-' };
+
+        filas += `
+            <tr id="row-${encId}">
+                <td>${r.alumno}</td>
+                <td>${r.encuentro}</td>
+                <td id="td-nota-${encId}">${g.nota}</td>
+                <td id="td-feedback-${encId}">${g.feedback}</td>
+                <td>
+                    <button class="btn btn-sm btn-info" onclick="abrirEvaluar('${encId}')">Evaluar</button>
+                    <button class="btn btn-sm btn-success" onclick="guardarEnBD('${encId}')">Guardar</button>
+                    <button class="btn btn-sm" style="background:#ffb6c1" onclick="exportarACalificaciones('${encId}')">Exportar</button>
+                    <button class="btn btn-sm btn-warning" onclick="exportarAlAlumnoIndividual('${encId}')">Enviar a Alumno</button>
+                </td>
+            </tr>
+        `;
+    }
+
+    v.innerHTML = `
+        <div style="padding: 40px;">
+            <h2>Auditoría de Test</h2>
+            <table class="table table-bordered mt-4">
+                <thead><tr><th>Alumno</th><th>Encuentro</th><th>Nota</th><th>Feedback</th><th>Acción</th></tr></thead>
+                <tbody>${filas || '<tr><td colspan="5">No hay respuestas.</td></tr>'}</tbody>
+            </table>
+        </div>
+        <div id="miModal" style="display:none; position:fixed; top:30%; left:35%; width:300px; background:#000; color:#fff; padding:20px; border:2px solid #00d4ff; z-index:1000; border-radius:10px;">
+            <h4 id="modal-titulo">Ingrese Nota</h4>
+            <input type="text" id="modal-input" class="form-control" style="margin: 10px 0;">
+            <button class="btn btn-primary w-100" onclick="procesarModal()">Aceptar</button>
+        </div>
+    `;
+};
+window.guardarAsistencia = function() {
+    const encuentro = document.getElementById('asist-encuentro').value;
+    if (!encuentro) {
+        alert("Seleccione un encuentro primero.");
+        return;
+    }
+
+    // Accedemos a la base de datos real
+    let db = JSON.parse(localStorage.getItem('cc_v38_db')) || { asistencias: [] };
+    if (!db.asistencias) db.asistencias = [];
+
+    // Buscamos todas las filas de alumnos en la tabla
+    const filas = document.querySelectorAll('#body-asistencia-admin tr');
+    
+    filas.forEach(fila => {
+        const dni = fila.getAttribute('data-dni');
+        // El checkbox que marca la asistencia
+        const checkbox = fila.querySelector('input[type="checkbox"]');
+        
+        if (dni && checkbox) {
+            const estado = checkbox.checked ? 1 : 0;
+            const idRegistro = `${dni}-${encuentro}`;
+            
+            // Reemplazamos si ya existe, añadimos si es nuevo
+            db.asistencias = db.asistencias.filter(a => a.id !== idRegistro);
+            db.asistencias.push({
+                id: idRegistro,
+                dni: dni,
+                encuentro: encuentro,
+                estado: estado
+            });
+        }
+    });
+
+    // Guardamos la DB actualizada
+    localStorage.setItem('cc_v38_db', JSON.stringify(db));
+    alert("Asistencia guardada correctamente en el sistema.");
+};
+window.exportarAAlumnos = function() {
+    const db = JSON.parse(localStorage.getItem('cc_v38_db'));
+    
+    if (!db || !db.asistencias || db.asistencias.length === 0) {
+        return alert("No hay datos de asistencia para exportar.");
+    }
+
+    // Al ser un sistema centralizado, los datos ya están en el localStorage.
+    // Esta función actúa como validación y aviso al administrador.
+    console.log("Datos listos para ser leídos por la vista del alumno:", db.asistencias);
+    
+    alert("Asistencia exportada correctamente al módulo de Alumnos.");
+};
+window.buscarDatosPorDNI = function(dni) {
+    // 1. Obtener BD
+    const db = JSON.parse(localStorage.getItem('cc_v38_db'));
+    const p = db.participantes.find(al => al.dni == dni);
+    
+    if (!p) {
+        console.warn("DNI no encontrado");
+        return;
+    }
+
+    // 2. Completar campos del encabezado
+    document.getElementById('an-nombre').value = `${p.apellido}, ${p.nombre}`;
+    document.getElementById('an-mat').value = p.codigo || 'S/M';
+    document.getElementById('an-tit').value = p.profesion || 'Lic. en Psicología';
+
+    // 3. Completar Fórmula Legal (Basado en el objeto p)
+    document.getElementById('txt-nombre').innerText = `${p.apellido}, ${p.nombre}`;
+    document.getElementById('txt-titulo').innerText = p.profesion || 'Lic. en Psicología';
+    document.getElementById('txt-mat').innerText = p.codigo || 'S/M';
+
+    // 4. Completar Notas y Asistencias
+    // Se asume que db.notas y db.asistencias están en tu objeto db
+    if (db.notas) {
+        const notas = db.notas.filter(n => n.dni == dni);
+        document.querySelectorAll('.nota-test').forEach((el, i) => el.value = notas[i]?.test || 0);
+        document.querySelectorAll('.nota-taller').forEach((el, i) => el.value = notas[i]?.taller || 0);
+    }
+    
+    if (db.asistencias) {
+        const asist = db.asistencias.filter(a => a.dni == dni);
+        document.querySelectorAll('.asist-enc').forEach((el, i) => el.value = asist[i]?.estado || 0);
+    }
+
+    // 5. Calcular promedio final
+    if (typeof calcularAnalitico === 'function') calcularAnalitico();
+};
+window.vAnaliticoAdmin = function() {
+    const v = document.getElementById('main-view');
+    v.style.display = 'block';
+    v.style.backgroundColor = '#f8f9fa';
+
+    const encuentros = [
+        "1_Cartografía de la Intersubjetividad", "2_La Memoria Traumática y el Aposteriori",
+        "3_Circuitos de Recompensa y Patologías del Deseo", "4_El Marcador Somático en la Transferencia",
+        "5_Neurobiología de la Repetición", "6_Plasticidad Simbólica y Sináptica",
+        "7_Arquitectura del Sueño y Función Alucinatoria", "8_El Ello Somático y Trastornos Psicosomáticos",
+        "9_Focalización en Estructuras Límbicas", "10_Ética de la Singularidad en la Era Tecnológica"
+    ];
+
+    const opciones = db.participantes.map(p => 
+        `<option value="${p.dni}">${p.apellido}, ${p.nombre}</option>`
+    ).join('');
+
+    v.innerHTML = `
+        <style>
+            .switch { position: relative; display: inline-block; width: 50px; height: 24px; }
+            .switch input { opacity: 0; width: 0; height: 0; }
+            .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 24px; }
+            .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+            input:checked + .slider { background-color: #0a1f44; }
+            input:checked + .slider:before { transform: translateX(26px); }
+        </style>
+
+        <div id="contenedor-analitico-espejo" style="position:relative; padding: 40px; background: #f8f9fa; min-height: 100vh;">
+            <div style="display: flex; align-items: center; margin-bottom: 40px; border-bottom: 3px solid #0a1f44; padding-bottom: 20px;">
+                <img src="logo.jpg" style="width: 120px; margin-right: 20px;">
+                <div>
+                    <h3 style="color: #0a1f44; margin: 0; text-transform: uppercase;">PROGRAMA DE FORMACIÓN PARA PROFESIONALES "Clínica de la Convergencia"</h3>
+                    <p style="color: #0a1f44; margin: 0;"><strong>Director:</strong> Dr. y Mgter. Rubén M. Pereyra</p>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-md-3"><label>Apellido y Nombres:</label><input type="text" id="an-nombre" class="form-control"></div>
+                <div class="col-md-3">
+                    <label>DNI N°:</label>
+                    <input type="text" id="an-dni" class="form-control" list="listado-alumnos" onchange="cargarDatosAnalitico(this.value)" placeholder="Seleccione o escriba DNI...">
+                    <datalist id="listado-alumnos">${opciones}</datalist>
+                </div>
+                <div class="col-md-3"><label>Código/Matrícula:</label><input type="text" id="an-mat" class="form-control"></div>
+                <div class="col-md-3"><label>Título de base:</label><input type="text" id="an-tit" class="form-control"></div>
+            </div>
+
+            <table class="table table-bordered" style="border-color: #0a1f44;">
+                <thead style="background: #0a1f44; color: #c5a059;">
+                    <tr><th>Taller/Encuentro</th><th>Nota Test</th><th>Nota Taller</th><th>Asistencia</th></tr>
+                </thead>
+                <tbody id="body-academico">
+                    ${encuentros.map(e => `<tr><td>${e}</td>
+                        <td><input type="number" class="form-control nota-test" onchange="calcularAnalitico()"></td>
+                        <td><input type="number" class="form-control nota-taller" onchange="calcularAnalitico()"></td>
+                        <td><input type="number" class="form-control asist-enc" onchange="calcularAnalitico()"></td></tr>`).join('')}
+                </tbody>
+            </table>
+
+            <div class="p-3 border border-secondary rounded mb-4">
+                <p><strong>Promedio General:</strong> <span id="res-prom">0.0</span></p>
+                <p><strong>Condición:</strong> <span id="res-cond" style="color:#c5a059; font-weight:bold;">-</span></p>
+            </div>
+
+            <div id="contenedor-legal" style="border-top: 2px solid #0a1f44; padding-top: 20px; font-style: italic;"></div>
+
+            <div style="display: flex; align-items: center; margin-top: 30px;">
+                <img src="sello.jpg" style="width: 100px; margin-right: 20px;">
+                <p><strong>Firma:</strong> Dr. y Mgter. Rubén M. Pereyra <br> Director Programa Clínica de la Convergencia</p>
+            </div>
+
+            <div class="mt-4 d-flex align-items-center">
+             <button class="btn btn-primary no-print" onclick="window.print()">Generar PDF</button>
+
+<div class="no-print"> 
+    <label>Enviar a estudiante:</label> 
+    <label class="switch">
+        <input type="checkbox" id="switch-envio">
+        <span class="slider"></span>
+    </label> 
+</div>
+            </div>
+        </div>
+    `;
+window.generarPDFEspejo = function() {
+    alert("El botón está funcionando. Iniciando captura...");
+    
+    const elemento = document.getElementById('contenedor-analitico-espejo');
+    if (!elemento) {
+        alert("ERROR: No encuentro el contenedor 'contenedor-analitico-espejo'. Revisa el ID en tu HTML.");
+        return;
+    }
+
+    console.log("Intentando capturar...");
+    
+    html2canvas(elemento, { scale: 2 }).then(canvas => {
+        alert("Captura realizada. Creando PDF...");
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jspdf.jsPDF('p', 'mm', 'a4');
+        pdf.addImage(imgData, 'PNG', 0, 0, 210, 297);
+        pdf.save("informe.pdf");
+        alert("PDF guardado.");
+    }).catch(err => {
+        alert("Error en html2canvas: " + err);
+        console.error(err);
+    });
+};
+   
+};
+// Función independiente para actualizar el registro legal
+window.actualizarRegistroLegal = function(p) {
+    const containerLegal = document.getElementById('contenedor-legal');
+    if (containerLegal) {
+        containerLegal.innerHTML = `<p><strong>REGISTRO ACADÉMICO:</strong> Certifica que ${p.apellido}, ${p.nombre}...</p>`;
+    } else {
+        console.warn("El ID 'contenedor-legal' no es accesible desde el script principal.");
+    }
+};
+window.cargarDatosAnalitico = function(dni) {
+    // 1. Cargamos la base de datos correcta
+    const db = JSON.parse(localStorage.getItem('cc_v38_db'));
+    if (!db) {
+        console.error("No se encontró la base de datos cc_v38_db");
+        return;
+    }
+
+    const dniLimpio = String(dni).trim();
+    const p = db.participantes.find(al => String(al.dni).trim() === dniLimpio);
+
+    if (!p) {
+        console.warn("No se encontró participante con DNI:", dniLimpio);
+        return;
+    }
+
+    // 2. Cargar campos de texto
+    document.getElementById('an-nombre').value = `${p.apellido}, ${p.nombre}`;
+    document.getElementById('an-mat').value = p.codigo || 'S/M';
+    document.getElementById('an-tit').value = p.profesion || 'Lic. en Psicología';
+
+    // 3. Fórmula Legal (Inyectada exactamente como pediste)
+    const containerLegal = document.getElementById('contenedor-legal');
+    if (containerLegal) {
+        containerLegal.innerHTML = `
+            <p><strong>REGISTRO ACADÉMICO:</strong> La Dirección Académica de la "Clínica de la Convergencia" certifica que el/la profesional ${p.apellido}, ${p.nombre}, matriculado/a bajo el N° ${p.codigo || 'S/M'}, ha cursado, rendido y aprobado los módulos correspondientes... Fecha: 29/5/2026</p>
+        `;
+    }
+
+    // 4. Notas, Asistencias y Calificaciones (Lectura desde cc_v38_db)
+    const filas = document.querySelectorAll('#body-academico tr');
+    
+    filas.forEach((fila, index) => {
+        const nroEncuentro = index + 1;
+
+        // Buscamos en las 3 propiedades que encontramos
+        const notaFila = db.notas.find(n => String(n.dni).trim() === dniLimpio && Number(n.encuentro) === nroEncuentro);
+        const asistFila = db.asistencias.find(a => String(a.dni).trim() === dniLimpio && Number(a.encuentro) === nroEncuentro);
+        const califFila = db.calificacionesTaller.find(c => String(c.dni).trim() === dniLimpio && Number(c.encuentro) === nroEncuentro);
+
+        const elTest = fila.querySelector('.nota-test');
+        const elTaller = fila.querySelector('.nota-taller');
+        const elAsist = fila.querySelector('.asist-enc');
+
+        // Asignamos valores (priorizando las fuentes encontradas)
+        if (elTest) elTest.value = notaFila ? (notaFila.test || 0) : 0;
+        if (elTaller) elTaller.value = califFila ? (califFila.nota || 0) : 0; // O califFila.taller según tu estructura
+        if (elAsist) elAsist.value = asistFila ? (asistFila.asistencia || 0) : 0;
+    });
+
+    if (typeof calcularAnalitico === 'function') calcularAnalitico();
+};
+window.calcularAnalitico = function() {
+    const inputsTest = document.querySelectorAll('.nota-test');
+    const inputsTaller = document.querySelectorAll('.nota-taller');
+    const inputsAsist = document.querySelectorAll('.asist-enc');
+    
+    let totalNota = 0;
+    let totalAsist = 0;
+    let count = 0;
+
+    inputsTest.forEach((el, i) => {
+        let t = parseFloat(el.value) || 0;
+        let tal = parseFloat(inputsTaller[i].value) || 0;
+        let as = parseFloat(inputsAsist[i].value) || 0;
+        
+        console.log(`Fila ${i}: Test=${t}, Taller=${tal}, Asist=${as}`); // Debug
+        
+        totalNota += (t + tal) / 2;
+        totalAsist += as;
+        count++;
+    });
+
+    const prom = count > 0 ? (totalNota / count).toFixed(2) : 0;
+    console.log("Promedio calculado:", prom, "Total asistencias:", totalAsist);
+
+    // Actualizar vista
+    const elProm = document.getElementById('res-prom');
+    const elCond = document.getElementById('res-cond');
+    
+    if (elProm) elProm.innerText = prom;
+    
+    // Lógica de Condición
+    let estado = "En proceso";
+    if (totalAsist >= 6 && prom >= 7) estado = "Promocionado";
+    else if (totalAsist < 6 && prom >= 7) estado = "Regular";
+    else if (totalAsist < 4 && prom >= 6) estado = "Libre";
+    else if (totalAsist < 4 && prom < 4) estado = "No logró acreditación";
+    
+    if (elCond) elCond.innerText = estado;
+}
+
+window.renderListaAlumnos = function() {
+    const tbody = document.getElementById('body-asistencia-admin');
+    tbody.innerHTML = '';
+    
+    db.participantes.forEach((est, index) => {
+        // Si no existe, inicializamos el array de asistencias del alumno
+        if (!est.asistencias) est.asistencias = [];
+        
+        const encuentro = document.getElementById('asist-encuentro').value;
+        const estaPresente = est.asistencias.includes(encuentro);
+
+        tbody.innerHTML += `
+            <tr>
+                <td>${est.apellido}, ${est.nombre}</td>
+                <td>
+                    <label class="switch">
+                        <input type="checkbox" ${estaPresente ? 'checked' : ''} onchange="toggleAsistenciaIndividual('${est.dni}', this.checked)">
+                        <span class="slider"></span>
+                    </label>
+                </td>
+            </tr>`;
+    });
+};
+
+window.toggleAsistenciaIndividual = function(dni, estado) {
+    const est = db.participantes.find(p => p.dni === dni);
+    const encuentro = document.getElementById('asist-encuentro').value;
+    
+    if (!encuentro) { alert("Selecciona un encuentro primero"); return; }
+
+    if (estado) {
+        if (!est.asistencias.includes(encuentro)) est.asistencias.push(encuentro);
+    } else {
+        est.asistencias = est.asistencias.filter(e => e !== encuentro);
+    }
+};
+
+window.guardarAsistencia = function() {
+    guardarApp(); // Tu función de persistencia global
+    alert("Asistencia guardada correctamente para el encuentro seleccionado.");
+};
+window.guardarAsistencia = function() {
+    const encuentro = document.getElementById('asist-encuentro').value;
+    if (!encuentro) return alert("Seleccione un encuentro primero.");
+
+    // Recuperamos la DB
+    let db = JSON.parse(localStorage.getItem('cc_v38_db')) || { asistencias: [], participantes: [] };
+    
+    // Obtenemos todos los switches en la tabla
+    const toggles = document.querySelectorAll('.asist-toggle');
+
+    toggles.forEach(t => {
+        const dni = t.getAttribute('data-dni');
+        const estaMarcado = t.checked;
+
+        // Buscamos si ya existe el registro en la BD
+        let idx = db.asistencias.findIndex(a => a.dni === dni && a.encuentro === encuentro);
+
+        if (estaMarcado) {
+            // Si está marcado y no existe, agregamos; si existe, aseguramos estado 1
+            if (idx === -1) {
+                db.asistencias.push({ dni: dni, encuentro: encuentro, estado: 1 });
+            } else {
+                db.asistencias[idx].estado = 1;
+            }
+        } else {
+            // Si no está marcado, si existía el registro, lo eliminamos o ponemos estado 0
+            if (idx !== -1) {
+                db.asistencias.splice(idx, 1);
+            }
+        }
+    });
+
+    // Guardamos en localStorage
+    localStorage.setItem('cc_v38_db', JSON.stringify(db));
+    alert("✅ Asistencia guardada correctamente en la Base de Datos.");
+};
+window.exportarAAnalitico = function() {
+    guardarAsistencia(); // Asegura el guardado de los cambios
+    if (typeof vAnaliticoAdmin === 'function') {
+        vAnaliticoAdmin(); // Salta a la vista de analíticos
+    } else {
+        alert("La vista de Analíticos no está cargada.");
+    }
+};
+window.autoCompletarDatos = function(dni) {
+    const db = JSON.parse(localStorage.getItem('cc_v38_db')) || { participantes: [], notas: [], asistencias: [] };
+    
+    // 1. Buscar datos personales
+    const alumno = db.participantes.find(p => String(p.dni) === String(dni));
+    if (!alumno) return alert("DNI no encontrado en la base de datos.");
+
+    // 2. Volcar datos en el DOM (Asegúrate que los IDs coincidan con tu formulario)
+    document.getElementById('input-nombre').value = `${alumno.apellido}, ${alumno.nombre}`;
+    document.getElementById('input-matricula').value = alumno.matricula || '';
+    document.getElementById('input-profesion').value = alumno.profesion || '';
+
+    // 3. Cargar Notas (Asumiendo que db.notas tiene {dni, test, taller})
+    const nota = db.notas.find(n => String(n.dni) === String(dni));
+    if (nota) {
+        document.getElementById('input-nota-test').value = nota.test || 0;
+        document.getElementById('input-nota-taller').value = nota.taller || 0;
+    }
+
+    // 4. Cargar Asistencias (Contar cuántas tiene registradas)
+    const totalAsistencias = db.asistencias.filter(a => String(a.dni) === String(dni)).length;
+    document.getElementById('input-asistencias').value = totalAsistencias;
+
+    // 5. Disparar el cálculo de la fórmula académica
+    if (typeof calcularRegistroAcademico === 'function') {
+        calcularRegistroAcademico();
+    }
+};
+(function() {
+    function crearPanel(titulo, datos) {
+        if (document.getElementById('panel-notas')) document.getElementById('panel-notas').remove();
+        const panel = document.createElement('div');
+        panel.id = 'panel-notas';
+        panel.style = "position:fixed; top:20px; right:20px; z-index:999999; background:#fff; border:2px solid #333; padding:15px; border-radius:8px; box-shadow:0 4px 8px rgba(0,0,0,0.3); width:300px; max-height:80vh; overflow-y:auto;";
+        
+        panel.innerHTML = `
+            <h4 style="margin:0 0 10px 0; font-family:sans-serif; font-size:14px; color:#333;">${titulo}:</h4>
+            <div style="background:#f4f4f4; padding:10px; border-radius:4px; font-family:monospace; font-size:12px; margin-bottom:10px;">
+                ${datos.length > 0 ? datos.join('<br>') : "No hay alumnos marcados"}
+            </div>
+            <button id="btn-cerrar-panel" style="width:100%; padding:8px; background:#d9534f; color:white; border:none; border-radius:4px; cursor:pointer; font-weight:bold;">CERRAR</button>
+        `;
+        document.body.appendChild(panel);
+        document.getElementById('btn-cerrar-panel').onclick = () => panel.remove();
+    }
+
+    document.addEventListener('keydown', function(event) {
+        
+        // --- F8: ASISTENCIA (Lógica de Mapeo) ---
+        if (event.key === 'F8') {
+            // Buscamos todas las filas de la tabla
+            const filas = document.querySelectorAll('tr'); 
+            const listaPresentes = [];
+
+            filas.forEach(fila => {
+                const checkbox = fila.querySelector('input[type="checkbox"]');
+                // Si hay checkbox y está marcado
+                if (checkbox && checkbox.checked) {
+                    // Buscamos el texto en las otras celdas de esa fila (el nombre)
+                    const nombre = fila.innerText.replace(/[\n\r]/g, ' ').trim().split('\t')[0];
+                    listaPresentes.push(`${nombre} Presente`);
+                }
+            });
+
+            crearPanel("Asistencia", listaPresentes);
+        }
+
+        // --- F9: CALIFICACIONES ---
+        else if (event.key === 'F9') {
+            const inputs = document.querySelectorAll('input.form-control:not([id])');
+            const notasRotuladas = [];
+            
+            for (let i = 0; i < inputs.length; i++) {
+                const valor = inputs[i].value.trim();
+                if (valor === "") continue;
+                const tipo = (i % 2 === 0) ? "Test" : "Taller";
+                const numero = Math.floor(i / 2) + 1;
+                notasRotuladas.push(`${tipo}_${numero}: ${valor}`);
+            }
+            crearPanel("Calificaciones", notasRotuladas);
+        }
+    });
+})();
+// Función para generar el espejo fiel del formulario
+async function generarPDFAnalitico() {
+    const { jsPDF } = window.jspdf;
+    const elemento = document.getElementById('main-view'); // Capturamos el contenedor principal
+    
+    // Usamos html2canvas para la captura fiel (asegura el estilo, logos y colores)
+    const canvas = await html2canvas(elemento, { scale: 2, backgroundColor: "#ffffff" });
+    const imgData = canvas.toDataURL('image/png');
+    
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const anchoPagina = pdf.internal.pageSize.getWidth();
+    const altoImagen = (canvas.height * anchoPagina) / canvas.width;
+    
+    pdf.addImage(imgData, 'PNG', 0, 0, anchoPagina, altoImagen);
+    
+    // Convertir a Blob para el visor
+    const pdfBlob = pdf.output('blob');
+    mostrarVisorPDF(pdfBlob);
+}
+
+function mostrarVisorPDF(blob) {
+    const url = URL.createObjectURL(blob);
+    const overlay = document.createElement('div');
+    overlay.style = "position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; padding:20px;";
+    
+    overlay.innerHTML = `
+        <div style="background:white; width:80%; margin:auto; height:90%; padding:20px; border-radius:8px;">
+            <div style="margin-bottom:10px;">
+                <button onclick="window.open('${url}')" class="btn btn-primary">Descargar PDF</button>
+                <button id="btn-drive" class="btn btn-success">Enviar a Google Drive</button>
+                <button onclick="this.parentElement.parentElement.parentElement.remove()" class="btn btn-danger">Cerrar</button>
+            </div>
+            <iframe src="${url}" style="width:100%; height:90%; border:none;"></iframe>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+
+    // Lógica integrada: Se ejecuta justo después de inyectar el HTML
+    document.getElementById('btn-drive').addEventListener('click', function() {
+        const est = db.participantes.find(p => p.dni === sesion.dni);
+        if (est && est.driveFolder) {
+            window.open(est.driveFolder, '_blank');
+        } else {
+            alert("No se encontró una carpeta de Drive asignada para este usuario.");
+        }
+    });
+}
+
+
+// Función que actualiza el estado en tu DB
+
+function renderizarVistaAlumno() {
+    const est = db.participantes.find(p => p.dni === sesion.dni);
+    const v = document.getElementById('main-view');
+    
+    // Si no está visado, no mostramos nada o un aviso
+    if (!est.visado) {
+        v.innerHTML = `<div class="alert alert-warning">Analítico aún no habilitado.</div>`;
+        return;
+    }
+
+    // Si está visado, generamos la etiqueta con el estilo solicitado
+    v.innerHTML = `
+        <div id="etiqueta-brillante" style="width: 300px; background: linear-gradient(135deg, #0a1f44, #c5a059); padding: 20px; border-radius: 15px; color: white; text-align: center; margin: 20px auto; border: 2px solid white;">
+            <h6>ANALÍTICO HABILITADO</h6>
+            <p style="font-weight:bold; margin:10px 0;">${est.nombre} ${est.apellido}<br>DNI: ${est.dni}</p>
+            <img src="${est.qr}" style="width:80px; background:white; padding:5px; border-radius:5px;">
+            <p style="font-size:0.8rem; margin-top:10px;">Ver documento</p>
+        </div>
+    `;
+}
+// 1. Función para mostrar la tabla de visado (Admin)
+function mostrarVisadoAdmin() {
+    const v = document.getElementById('main-view');
+    let html = `
+        <h3 class="mb-4">🛡️ Visado Analítico de Alumnos</h3>
+        <table class="table table-striped table-hover bg-white shadow-sm">
+            <thead class="table-dark">
+                <tr><th>Alumno</th><th>DNI</th><th>Drive</th><th>Visado (Habilitar)</th></tr>
+            </thead>
+            <tbody>`;
+
+    db.participantes.forEach(est => {
+        html += `<tr>
+            <td>${est.apellido}, ${est.nombre}</td>
+            <td>${est.dni}</td>
+            <td><button class="btn btn-sm btn-outline-primary" onclick="window.open('${est.driveFolder}', '_blank')">📂 Abrir Drive</button></td>
+            <td>
+                <input type="checkbox" ${est.visado ? 'checked' : ''} 
+                onchange="toggleVisado('${est.dni}', this.checked)">
+            </td>
+        </tr>`;
+    });
+
+    html += `</tbody></table>`;
+    v.innerHTML = html;
+}
+
+// 2. Función para actualizar y guardar cambios permanentemente
+function toggleVisado(dni, estado) {
+    const est = db.participantes.find(p => p.dni === dni);
+    if (est) {
+        est.visado = estado;
+        guardar(); // Usamos tu función existente que hace localStorage.setItem(DB_KEY, JSON.stringify(db))
+        console.log(`Visado de ${est.nombre} actualizado a: ${estado}`);
+    }
+}
+
+// 3. Función de la Vista del Alumno (Mi Analítico Oficial)
+function vAnaliticoAlumnoView() {
+    const v = document.getElementById('main-view');
+    const est = db.participantes.find(p => p.dni === sesion.dni);
+
+    if (!est) return v.innerHTML = "<h3>Error de usuario.</h3>";
+
+    // --- AQUÍ AGREGAMOS EL BOTÓN DE SALIDA ---
+    let html = `
+        <div class="mb-3">
+            <button class="btn btn-secondary btn-sm" onclick="vHome()">
+                <i class="fa-solid fa-arrow-left"></i> Volver al Inicio
+            </button>
+        </div>`;
+
+    if (!est.visado) {
+        html += `<div class="alert alert-warning text-center mt-5">
+            <h5>Analítico Pendiente</h5>
+            <p>Tu analítico aún no ha sido visado por el administrador. Por favor, espera a la habilitación.</p>
+        </div>`;
+    } else {
+        // ... (Tu código actual de renderizado del analítico) ...
+        html += `
+        <div class="card p-4 shadow-lg border-0 mx-auto" style="max-width: 450px; background: linear-gradient(135deg, #0a1f44 0%, #1a3a6a 100%); color: white; border-radius: 20px;">
+            <div class="text-center">
+                <h5 class="text-uppercase" style="letter-spacing: 2px; color: #c5a059;">Analítico Oficial</h5>
+                <hr style="border-top: 2px solid #c5a059;">
+                <p class="fw-bold fs-5">${est.nombre} ${est.apellido}</p>
+                <div id="qrcode" class="bg-white p-2 rounded mx-auto my-3" style="width: 140px; height: 140px;"></div>
+                <button class="btn btn-light fw-bold w-100 mt-3" onclick="window.open('${est.driveFolder}', '_blank')">
+                    Ver Documentos en Drive
+                </button>
+            </div>
+        </div>`;
+    }
+    
+    v.innerHTML = html;
+
+    // Generamos el QR solo si está visado
+    if (est.visado) {
+        new QRCode(document.getElementById("qrcode"), {
+            text: est.driveFolder,
+            width: 128,
+            height: 128,
+            colorDark: "#000000",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H
+        });
+    }
+}
+window.gestionarAsistenciasAdmin = function() {
+    const v = document.getElementById('main-view');
+    v.style.display = 'block';
+
+    let html = `<h3>Panel de Asistencia Completo</h3>
+    <table class="table table-bordered table-sm">
+        <thead>
+            <tr>
+                <th>Estudiante</th>
+                ${Array.from({length: 10}, (_, i) => `<th>E${i+1}</th>`).join('')}
+                <th>Visible Alumno</th>
+            </tr>
+        </thead>
+        <tbody>`;
+
+    db.participantes.forEach(est => {
+        html += `<tr>
+            <td>${est.apellido}, ${est.nombre}</td>`;
+        
+        // Generar las 10 columnas de encuentros
+        for(let n = 1; n <= 10; n++) {
+            const key = `asist_${est.dni}_e${n}`;
+            const marcado = localStorage.getItem(key) === 'true' ? 'checked' : '';
+            html += `<td><input type="checkbox" onchange="localStorage.setItem('${key}', this.checked)" ${marcado}></td>`;
+        }
+
+        // Columna 12: Checkbox para mostrar al alumno
+        const keyVis = `visible_${est.dni}`;
+        const marcadoVis = localStorage.getItem(keyVis) === 'true' ? 'checked' : '';
+        html += `<td><input type="checkbox" onchange="localStorage.setItem('${keyVis}', this.checked)" ${marcadoVis}></td>
+        </tr>`;
+    });
+
+    html += `</tbody></table><button class="btn btn-primary" onclick="vHome()">Volver</button>`;
+    v.innerHTML = html;
+};
+window.verMiProgresoAsistencia = function() {
+    const v = document.getElementById('main-view');
+    const est = db.participantes.find(p => p.dni === sesion.dni);
+    
+    // Verificamos si el admin permitió ver los datos
+    const esVisible = localStorage.getItem(`visible_${est.dni}`) === 'true';
+
+    if (!esVisible) {
+        v.innerHTML = `<h3>Asistencia</h3><div class="alert alert-warning">Aún no disponible.</div>
+                       <button class="btn btn-secondary" onclick="vHome()">Volver</button>`;
+        return;
+    }
+
+    let html = `<h3>Mi Asistencia</h3><table class="table"><thead><tr><th>Encuentro</th><th>Estado</th></tr></thead><tbody>`;
+    for(let n = 1; n <= 10; n++) {
+        const estaPresente = localStorage.getItem(`asist_${est.dni}_e${n}`) === 'true';
+        html += `<tr><td>Encuentro ${n}</td><td>${estaPresente ? '✅ Presente' : '❌ Ausente'}</td></tr>`;
+    }
+    html += `</tbody></table><button class="btn btn-secondary" onclick="vHome()">Volver</button>`;
+    v.innerHTML = html;
+};
+window.vToolsAdmin = function() {
+    const v = document.getElementById('main-view');
+    v.innerHTML = `
+        <h3>🛠️ Herramientas de Gestión</h3>
+        <div class="card p-4 mt-3">
+            <h5>Gestión de Datos</h5>
+            <div class="d-grid gap-2 mt-3">
+                <button class="btn btn-success" onclick="backup()">💾 Realizar Backup (Descargar y Guardar)</button>
+                <button class="btn btn-warning" onclick="document.getElementById('file-input').click()">📂 Cargar Backup</button>
+                <input type="file" id="file-input" style="display:none" onchange="cargarBackup(event)">
+                <button class="btn btn-danger" onclick="limpiarCargaTotal()">⚠️ Limpieza Total</button>
+            </div>
+        </div>
+        <button class="btn btn-secondary mt-3" onclick="vHome()">Volver</button>`;
+};
+window.cargarBackup = function(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const data = JSON.parse(e.target.result);
+            db = data; // Sobrescribe la base de datos
+            localStorage.setItem('backup_automatico_completo', JSON.stringify(db)); // Guarda en navegador
+            alert("✅ Backup cargado correctamente.");
+            location.reload(); // Recarga para aplicar los datos
+        } catch (err) {
+            alert("❌ Error: El archivo no es válido.");
+        }
+    };
+    reader.readAsText(file);
+};
+
+</script>
+</body>
+
+</html>
