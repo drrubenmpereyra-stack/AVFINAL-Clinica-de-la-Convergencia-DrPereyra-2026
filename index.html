@@ -261,8 +261,7 @@ window.renderMenu = function() {
     const m = document.getElementById('menu-side');
     const isA = (sesion.rol === 'ADM');
 
-    // Filtro inteligente: el alumno solo ve el badge de sus mensajes pendientes
-    // El administrador no ve badge (ya que él es el emisor)
+    // Filtro inteligente para badges
     let badge = '';
     if (!isA) {
         const nuevosMensajes = (db.mensajes || []).filter(m => 
@@ -291,6 +290,7 @@ window.renderMenu = function() {
               </div>`;
     } else {
         h += `<div class="nav-link" onclick="vPart()">👥 Participantes</div>
+              <div class="nav-link" onclick="vLegajoAdmin()">📂 Legajos</div>
               <div class="nav-link" onclick="vPagosAdmin()">💰 Pagos</div>
               <div class="nav-link" onclick="gestionarAsistenciasAdmin()">✅ Asistencia</div>
               <div class="nav-link" onclick="vCalificacionesAdmin()">📝 CALIFICACIONES</div>
@@ -2435,6 +2435,8 @@ window.eliminarPago = function(id) {
 };
 window.vMensajesAdmin = function() {
     const v = document.getElementById('main-view');
+    
+    // Lista de alumnos que ya manejamos
     const alumnos = [
         { nombre: 'RIOS GRACIELA', dni: '17319305' },
         { nombre: 'SCHWAB GISELA', dni: '24557473' },
@@ -2444,24 +2446,35 @@ window.vMensajesAdmin = function() {
         { nombre: 'STEFANINI ROMINA BENZO', dni: '30772297' }
     ];
 
+    // Generamos las opciones del select
     const opciones = alumnos.map(a => `<option value="${a.dni}">${a.nombre}</option>`).join('');
 
     v.innerHTML = `
         <div class="p-4">
             <h3>Centro de Mensajería - Adm</h3>
-            <select id="msg-destino" class="form-control mb-2">${opciones}</select>
-            <input type="text" id="msg-asunto" class="form-control mb-2" placeholder="Asunto">
+            <div class="mb-3">
+                <label>Enviar a:</label>
+                <select id="msg-destino" class="form-control">
+                    <option value="TODOS">📢 ENVIAR A TODOS LOS ESTUDIANTES</option>
+                    ${opciones}
+                </select>
+            </div>
             
-            <div class="mb-2">
-                <small>Elegir emoji:</small>
-                <div onclick="document.getElementById('msg-contenido').value += '⚠️'" class="btn btn-sm btn-light">⚠️</div>
-                <div onclick="document.getElementById('msg-contenido').value += '📢'" class="btn btn-sm btn-light">📢</div>
-                <div onclick="document.getElementById('msg-contenido').value += '✅'" class="btn btn-sm btn-light">✅</div>
-                <div onclick="document.getElementById('msg-contenido').value += '🔍'" class="btn btn-sm btn-light">🔍</div>
-                <div onclick="document.getElementById('msg-contenido').value += '🛑'" class="btn btn-sm btn-light">🛑</div>
+            <div class="mb-3">
+                <input type="text" id="msg-asunto" class="form-control" placeholder="Asunto del mensaje">
             </div>
 
-            <textarea id="msg-contenido" class="form-control mb-2" rows="3" placeholder="Escribe el mensaje..."></textarea>
+            <div class="mb-2">
+                <small>Emojis de ayuda:</small>
+                <div class="btn-group d-block">
+                    <button class="btn btn-sm btn-light" onclick="document.getElementById('msg-contenido').value += '⚠️'">⚠️</button>
+                    <button class="btn btn-sm btn-light" onclick="document.getElementById('msg-contenido').value += '📢'">📢</button>
+                    <button class="btn btn-sm btn-light" onclick="document.getElementById('msg-contenido').value += '✅'">✅</button>
+                    <button class="btn btn-sm btn-light" onclick="document.getElementById('msg-contenido').value += '🔍'">🔍</button>
+                </div>
+            </div>
+
+            <textarea id="msg-contenido" class="form-control mb-3" rows="5" placeholder="Escribe aquí el mensaje..."></textarea>
             
             <button class="btn btn-primary" onclick="guardarMensajeAdmin()">Enviar Mensaje</button>
             <button class="btn btn-secondary" onclick="renderMenu(); vHome();">Volver</button>
@@ -2512,7 +2525,95 @@ window.vMensajesAlumno = function() {
     `;
     renderMenu(); // Actualiza el badge rojo del menú
 };
+window.vLegajoAdmin = function() {
+    const v = document.getElementById('main-view');
+    const alumnos = [
+        { nombre: 'RIOS GRACIELA', dni: '17319305', pass: 'R305' },
+        { nombre: 'SCHWAB GISELA', dni: '24557473', pass: 'S473' },
+        { nombre: 'RODRIGUEZ RAMIRO', dni: '17319325', pass: 'R325' },
+        { nombre: 'CAON FEDERICO', dni: '32458703', pass: 'C703' },
+        { nombre: 'PRAVAZ EMILIA', dni: '32059206', pass: 'P206' },
+        { nombre: 'STEFANINI ROMINA BENZO', dni: '30772297', pass: 'S297' }
+    ];
 
+    v.innerHTML = `
+        <div class="p-4" id="form-legajo">
+            <div style="display: flex; align-items: center; margin-bottom: 20px;">
+                <img src="logo.jpg" style="width:80px; height:80px; margin-right:15px; border-radius:50%; object-fit: cover;">
+                <div>
+                    <h3 style="margin:0;">CLINICA DE LA CONVERGENCIA</h3>
+                    <h5 style="margin:0; color:#555;">Legajo de Estudiantes</h5>
+                </div>
+            </div>
+            <hr>
+
+            <div class="mb-3">
+                <label>Seleccionar Estudiante:</label>
+                <select id="sel-alumno" class="form-control" onchange="cargarDatosLegajo()">
+                    <option value="">Seleccione uno...</option>
+                    ${alumnos.map(a => `<option value="${a.dni}">${a.nombre} - ${a.dni}</option>`).join('')}
+                </select>
+            </div>
+
+            <div id="datos-legajo" class="d-none">
+                <p><strong>Legajo (Contraseña):</strong> <span id="legajo-pass"></span></p>
+                <input type="text" id="link-foto" class="form-control mb-2" placeholder="Link Drive Foto Perfil (lh3...)">
+                
+                <input type="text" id="link-dni-anverso" class="form-control mb-2" placeholder="Link Drive DNI Anverso (lh3...)">
+                <input type="text" id="link-dni-reverso" class="form-control mb-2" placeholder="Link Drive DNI Reverso (lh3...)">
+                
+                <label>Título:</label>
+                <select id="sel-titulo" class="form-control mb-2" onchange="toggleTituloExtra()">
+                    <option value="Licenciado en Psicología">Licenciado en Psicología</option>
+                    <option value="Dr en Física">Dr en Física</option>
+                    <option value="Otro">Otro</option>
+                </select>
+                <input type="text" id="input-otro" class="form-control mb-2 d-none" placeholder="Especifique título...">
+                
+                <input type="text" id="link-titulo" class="form-control mb-2 d-none" placeholder="Link Drive Título (lh3...)">
+                
+                <button class="btn btn-success" onclick="guardarLegajo()">Guardar Legajo</button>
+            </div>
+            <button class="btn btn-secondary mt-3" onclick="renderMenu(); vHome();">Volver</button>
+        </div>
+    `;
+};
+window.cargarDatosLegajo = function() {
+    const dni = document.getElementById('sel-alumno').value;
+    if(!dni) return;
+    
+    document.getElementById('datos-legajo').classList.remove('d-none');
+    // Aquí buscarías si ya existe en db.legajos[dni] para precargar
+};
+
+window.toggleTituloExtra = function() {
+    const sel = document.getElementById('sel-titulo').value;
+    document.getElementById('input-otro').classList.toggle('d-none', sel !== 'Otro');
+    document.getElementById('link-titulo').classList.remove('d-none'); // Habilitar siempre que hay título
+};
+
+window.guardarLegajo = function() {
+    // Lógica para guardar en db.legajos[dni] = { ...datos }
+    alert("Legajo actualizado correctamente.");
+};
+window.vHome = function() {
+    const v = document.getElementById('main-view');
+    const fotoSrc = (sesion.rol === 'ADM') ? 'admin.jpg' : `${sesion.dni}.jpg`;
+
+    console.log("Intentando cargar foto desde: " + fotoSrc);
+
+    v.innerHTML = `
+        <div class="p-4 text-center">
+            <img src="${fotoSrc}" 
+                 onload="console.log('Imagen cargada exitosamente')"
+                 onerror="this.src='default_profile.jpg'; console.error('Error: No se encontró ' + '${fotoSrc}');"
+                 style="width:150px; height:150px; border-radius:50%; border: 3px solid #c5a059; object-fit: cover; background-color: #eee;">
+            
+            <h3>Bienvenido, ${sesion.nombre}</h3>
+            <p>Clínica de la Convergencia</p>
+        </div>
+    `;
+};
 </script>
 </body>
 
