@@ -257,9 +257,22 @@ function ejecutarLogin() {
         }, 3000);
     }, 10000);
 }
-function renderMenu() {
+window.renderMenu = function() {
     const m = document.getElementById('menu-side');
     const isA = (sesion.rol === 'ADM');
+
+    // Filtro inteligente: el alumno solo ve el badge de sus mensajes pendientes
+    // El administrador no ve badge (ya que él es el emisor)
+    let badge = '';
+    if (!isA) {
+        const nuevosMensajes = (db.mensajes || []).filter(m => 
+            (m.destino === 'TODOS' || m.destino === sesion.dni) && !m.leido
+        ).length;
+
+        if (nuevosMensajes > 0) {
+            badge = `<span style="background:red; color:white; border-radius:50%; padding:2px 8px; font-size:10px; margin-left:5px;">${nuevosMensajes}</span>`;
+        }
+    }
 
     let h = `<div class="nav-link" onclick="vHome()">🏠 Inicio / Dashboard</div>
              <div class="nav-link" onclick="vEncs()">📅 Encuentros</div>
@@ -272,7 +285,10 @@ function renderMenu() {
               <div class="nav-link" onclick="vPagosAlumnoView()">💰 Mis Pagos</div>
               <div class="nav-link" onclick="vNotificacionesAlu()">📝 Mis Calificaciones</div>
               <div class="nav-link" onclick="verMiProgresoAsistencia()">✅ Mi Asistencia</div>
-              <div class="nav-link" id="m-al-an" onclick="vAnaliticoAlumnoView()">📜 Mi Analítico Oficial</div>`;
+              <div class="nav-link" id="m-al-an" onclick="vAnaliticoAlumnoView()">📜 Mi Analítico Oficial</div>
+              <div class="nav-link" onclick="vMensajesAlumno()" style="color: #c5a059; cursor: pointer;">
+                📧 Mis Mensajes ${badge}
+              </div>`;
     } else {
         h += `<div class="nav-link" onclick="vPart()">👥 Participantes</div>
               <div class="nav-link" onclick="vPagosAdmin()">💰 Pagos</div>
@@ -284,10 +300,11 @@ function renderMenu() {
               <hr>
               <div class="nav-link" onclick="vGestionEdicionTest()">🤖 EDICIÓN TEST</div>
               <div class="nav-link" onclick="vAuditoriaTest()">🧐 AUDITORÍA TEST CON IA</div>
-              <div class="nav-link" onclick="vAuditoriaTalleres()">📊 AUDITORÍA TALLERES</div>`;
+              <div class="nav-link" onclick="vAuditoriaTalleres()">📊 AUDITORÍA TALLERES</div>
+              <div class="nav-link" onclick="vMensajesAdmin()" style="color: #e74c3c; cursor: pointer;">📨 Enviar Mensajes (ADM)</div>`;
     }
     m.innerHTML = h;
-}
+};
 
 function vHome() {
     const v = document.getElementById('main-view');
@@ -2416,9 +2433,87 @@ window.eliminarPago = function(id) {
         vPagosAdmin();
     }
 };
+window.vMensajesAdmin = function() {
+    const v = document.getElementById('main-view');
+    const alumnos = [
+        { nombre: 'RIOS GRACIELA', dni: '17319305' },
+        { nombre: 'SCHWAB GISELA', dni: '24557473' },
+        { nombre: 'RODRIGUEZ RAMIRO', dni: '17319325' },
+        { nombre: 'CAON FEDERICO', dni: '32458703' },
+        { nombre: 'PRAVAZ EMILIA', dni: '32059206' },
+        { nombre: 'STEFANINI ROMINA BENZO', dni: '30772297' }
+    ];
+
+    const opciones = alumnos.map(a => `<option value="${a.dni}">${a.nombre}</option>`).join('');
+
+    v.innerHTML = `
+        <div class="p-4">
+            <h3>Centro de Mensajería - Adm</h3>
+            <select id="msg-destino" class="form-control mb-2">${opciones}</select>
+            <input type="text" id="msg-asunto" class="form-control mb-2" placeholder="Asunto">
+            
+            <div class="mb-2">
+                <small>Elegir emoji:</small>
+                <div onclick="document.getElementById('msg-contenido').value += '⚠️'" class="btn btn-sm btn-light">⚠️</div>
+                <div onclick="document.getElementById('msg-contenido').value += '📢'" class="btn btn-sm btn-light">📢</div>
+                <div onclick="document.getElementById('msg-contenido').value += '✅'" class="btn btn-sm btn-light">✅</div>
+                <div onclick="document.getElementById('msg-contenido').value += '🔍'" class="btn btn-sm btn-light">🔍</div>
+                <div onclick="document.getElementById('msg-contenido').value += '🛑'" class="btn btn-sm btn-light">🛑</div>
+            </div>
+
+            <textarea id="msg-contenido" class="form-control mb-2" rows="3" placeholder="Escribe el mensaje..."></textarea>
+            
+            <button class="btn btn-primary" onclick="guardarMensajeAdmin()">Enviar Mensaje</button>
+            <button class="btn btn-secondary" onclick="renderMenu(); vHome();">Volver</button>
+        </div>
+    `;
+};
+
+window.guardarMensajeAdmin = function() {
+    if(!db.mensajes) db.mensajes = [];
+    
+    db.mensajes.push({
+        destino: document.getElementById('msg-destino').value, // Guarda el DNI o 'TODOS'
+        asunto: document.getElementById('msg-asunto').value,
+        contenido: document.getElementById('msg-contenido').value,
+        fecha: new Date().toLocaleDateString(),
+        leido: false
+    });
+    
+    guardar();
+    alert("Mensaje enviado.");
+    renderMenu();
+    vHome();
+};
+window.vMensajesAlumno = function() {
+    const v = document.getElementById('main-view');
+    
+    // Filtramos: Mensajes para TODOS o los dirigidos al DNI de esta sesión
+    const misMensajes = (db.mensajes || []).filter(m => m.destino === 'TODOS' || m.destino === sesion.dni);
+
+    // Marcamos solo los de este alumno como leídos
+    misMensajes.forEach(m => m.leido = true);
+    guardar();
+
+    v.innerHTML = `
+        <div class="p-4">
+            <h3>Bandeja de Entrada</h3>
+            <button class="btn btn-secondary mb-3" onclick="renderMenu(); vHome();">Volver</button>
+            ${misMensajes.length > 0 ? misMensajes.map(m => `
+                <div class="card mb-2">
+                    <div class="card-body">
+                        <h5 class="card-title">${m.asunto}</h5>
+                        <p class="card-text">${m.contenido}</p>
+                        <small class="text-muted">${m.fecha}</small>
+                    </div>
+                </div>
+            `).join('') : '<p>No tienes mensajes nuevos.</p>'}
+        </div>
+    `;
+    renderMenu(); // Actualiza el badge rojo del menú
+};
 
 </script>
 </body>
 
 </html>
-   
