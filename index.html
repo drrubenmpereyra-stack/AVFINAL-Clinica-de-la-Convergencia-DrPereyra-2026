@@ -166,6 +166,14 @@ const DB_KEY = 'cc_v38_db';
 let db = JSON.parse(localStorage.getItem(DB_KEY)) || { 
     participantes: [], encuentros: [], talleres: [], agenda: [], pagos: [], asistencias: [], notas: [], materiales: [], analiticosVisibles: {}, testsIA: [], anuncio: "", legajos: {} 
 };
+const mapaDiplomas = {
+    "32458703": "https://drive.google.com/drive/folders/1LnnPq0w7P81ShMJsG3MNoLkfhktakV6v?usp=sharing",
+    "32059206": "https://drive.google.com/drive/folders/1fOJ27u87krGO9ykIbBtNBT_xSvSUmXuF?usp=sharing",
+    "17319305": "https://drive.google.com/drive/folders/1da5V0BKy4FghsOCz7B66mNOz7ZTFMKt5?usp=sharing",
+    "17319325": "https://drive.google.com/drive/folders/1kixAS7AqD1zr3pDYKC4mjBBW0sqNimx0?usp=sharing",
+    "24557473": "https://drive.google.com/drive/folders/1xDl_o19beXQrXMo4AdLBF4TWmEHkqwYb?usp=sharing",
+    "30772297": "https://drive.google.com/drive/folders/1PioVY2n5eJp7W1-c-yLqVzHkiXfNbEzh?usp=sharing"
+};
 
 // Listado oficial absoluto con datos, links estables y mapeo QR físico correspondientes
 const listadoOficialEstudiantes = [
@@ -261,33 +269,33 @@ window.renderMenu = function() {
     const m = document.getElementById('menu-side');
     const isA = (sesion.rol === 'ADM');
 
-    // Filtro inteligente para badges
+    const estados = JSON.parse(localStorage.getItem('participantes_db') || '{}');
+    const dniAlumno = String(sesion.dni || "");
+    const tieneVisado = (estados[dniAlumno] === true);
+    const linkDiploma = (typeof window.mapaDiplomas !== 'undefined') ? window.mapaDiplomas[dniAlumno] : null;
+
     let badge = '';
     if (!isA) {
-        const nuevosMensajes = (db.mensajes || []).filter(m => 
-            (m.destino === 'TODOS' || m.destino === sesion.dni) && !m.leido
-        ).length;
-
-        if (nuevosMensajes > 0) {
-            badge = `<span style="background:red; color:white; border-radius:50%; padding:2px 8px; font-size:10px; margin-left:5px;">${nuevosMensajes}</span>`;
-        }
+        const nuevosMensajes = (db.mensajes || []).filter(m => (m.destino === 'TODOS' || m.destino === sesion.dni) && !m.leido).length;
+        if (nuevosMensajes > 0) badge = `<span style="background:red; color:white; border-radius:50%; padding:2px 8px; font-size:10px; margin-left:5px;">${nuevosMensajes}</span>`;
     }
 
     let h = `<div class="nav-link" onclick="vHome()">🏠 Inicio / Dashboard</div>
              <div class="nav-link" onclick="vEncs()">📅 Encuentros</div>
              <div class="nav-link" onclick="vTals()">🏫 Talleres</div>
              <div class="nav-link" onclick="vAge()">📔 Agenda</div>
-             <div class="nav-link" onclick="vBib()">📚 Biblioteca</div><hr>`;
+             <div class="nav-link" onclick="vBib()">📚 Biblioteca</div>
+             <div class="nav-link" onclick="vMostrarCentroRecreativo()" style="color: #27ae60; cursor: pointer; font-weight: bold;">🎮 Actividades Recreativas</div>
+             <hr>`;
 
     if(!isA) {
         h += `<div class="nav-link" onclick="vTestsAlumno()">📝 Mis Tests</div>
+              <div class="nav-link" onclick="abrirPanelEstrellas()" style="color: #f1c40f; cursor: pointer; font-weight: bold; text-shadow: 0 0 5px #f1c40f;">⭐ Autoaprendizaje</div>
               <div class="nav-link" onclick="vPagosAlumnoView()">💰 Mis Pagos</div>
               <div class="nav-link" onclick="vNotificacionesAlu()">📝 Mis Calificaciones</div>
               <div class="nav-link" onclick="verMiProgresoAsistencia()">✅ Mi Asistencia</div>
               <div class="nav-link" id="m-al-an" onclick="vAnaliticoAlumnoView()">📜 Mi Analítico Oficial</div>
-              <div class="nav-link" onclick="vMensajesAlumno()" style="color: #c5a059; cursor: pointer;">
-                📧 Mis Mensajes ${badge}
-              </div>`;
+              <div class="nav-link" onclick="vMensajesAlumno()" style="color: #c5a059; cursor: pointer;">📧 Mis Mensajes ${badge}</div>`;
     } else {
         h += `<div class="nav-link" onclick="vPart()">👥 Participantes</div>
               <div class="nav-link" onclick="vLegajoAdmin()">📂 Legajos</div>
@@ -296,31 +304,19 @@ window.renderMenu = function() {
               <div class="nav-link" onclick="vCalificacionesAdmin()">📝 CALIFICACIONES</div>
               <div class="nav-link" onclick="vAnaliticoAdmin()">📜 ANALÍTICOS</div>
               <div class="nav-link" onclick="mostrarVisadoAdmin()">🛡️ VISADO ANALÍTICO</div>
+              <div class="nav-link" onclick="vEmisionDiplomas()" style="color: #c5a059; cursor: pointer;">🎓 EMITIR DIPLOMAS</div>
               <div class="nav-link" onclick="vToolsAdmin()">🛠️ Herramientas</div>
-              <hr>
+              <hr style="border-top: 1px solid #C5A059;">
+              <small style="color: #C5A059; padding-left: 10px; font-weight: bold;">GESTIÓN ACADÉMICA</small>
               <div class="nav-link" onclick="vGestionEdicionTest()">🤖 EDICIÓN TEST</div>
               <div class="nav-link" onclick="vAuditoriaTest()">🧐 AUDITORÍA TEST CON IA</div>
+              <div class="nav-link" onclick="vAuditoriaAutoaprendizaje()" style="color: #27ae60; cursor: pointer;">📈 AUDITORÍA AUTOAPRENDIZAJE</div>
               <div class="nav-link" onclick="vAuditoriaTalleres()">📊 AUDITORÍA TALLERES</div>
-              <div class="nav-link" onclick="vMensajesAdmin()" style="color: #e74c3c; cursor: pointer;">📨 Enviar Mensajes (ADM)</div>`;
+              <a href="https://drrubenmpereyra-stack.github.io/Departamento-de-titulos-clinica-de-la-convergencia/" target="_blank" class="nav-link" style="color: #C5A059; cursor: pointer; font-weight: bold; border: 1px solid #C5A059; margin-top: 10px; border-radius: 5px;">🎓 CENTRAL DE DIPLOMAS</a>
+              <div class="nav-link" onclick="vMensajesAdmin()" style="color: #e74c3c; cursor: pointer; margin-top: 10px;">📨 Enviar Mensajes (ADM)</div>`;
     }
     m.innerHTML = h;
 };
-
-function vHome() {
-    const v = document.getElementById('main-view');
-    if(sesion.rol === 'ADM') {
-        v.innerHTML = `<h3>Tablero de Gestión</h3><div class="row">
-            <div class="col-md-6 mb-4"><div class="card p-3"><h5>Promedio Notas</h5><canvas id="ch1"></canvas></div></div>
-            <div class="col-md-6 mb-4"><div class="card p-3"><h5>Estado de Pagos</h5><canvas id="ch2"></canvas></div></div>
-        </div>`;
-        setTimeout(() => {
-            new Chart(document.getElementById('ch1'), { type:'bar', data:{ labels:['E1','E2','E3'], datasets:[{label:'Nota', data:[8,7,9], backgroundColor:'#c5a059'}]} });
-            new Chart(document.getElementById('ch2'), { type:'pie', data:{ labels:['Pagado','Pendiente'], datasets:[{data:[db.pagos.length, 5], backgroundColor:['#198754','#dc3545']}]} });
-        }, 100);
-    } else {
-        v.innerHTML = `<div class="text-center py-5"><h3>Bienvenido al Aula Virtual, ${sesion.nombre}</h3><p>Clínica de la Convergencia 2026</p></div>`;
-    }
-}
 
 function vPart() {
     editIndex = -1;
@@ -2614,6 +2610,372 @@ window.vHome = function() {
         </div>
     `;
 };
+window.abrirCuestionario = function(num) {
+    const links = {
+        1: "https://gemini.google.com/share/cae4fdd19682",
+    };
+
+    if (links[num]) {
+        // Abre el cuestionario original de Gemini en una pestaña nueva
+        window.open(links[num], '_blank', 'noopener,noreferrer');
+    } else {
+        console.error("Link no configurado para la estrella " + num);
+    }
+};
+window.abrirPanelEstrellas = function() {
+    const colores = ["#FF0000", "#008000", "#0000FF", "#FFD700", "#FF8C00", "#FF00FF", "#8A2BE2", "#50C878", "#00FFFF", "#CC7722"];
+    
+    const overlay = document.createElement('div');
+    overlay.id = "panel-estrellas";
+    overlay.style = "position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:9999; display:flex; justify-content:center; align-items:center; flex-direction:column;";
+    
+    let html = `<h2 style="color:white; margin-bottom:20px;">Selecciona el Eje de Aprendizaje</h2>
+                <div style="display:grid; grid-template-columns: repeat(5, 1fr); gap:20px;">`;
+
+    for (let i = 0; i < 10; i++) {
+        html += `<div onclick="lanzarCuestionario(${i + 1}, this)" style="
+            width: 80px; height: 80px;
+            background: ${colores[i]};
+            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+            border: 3px solid black;
+            cursor: pointer; display: flex; justify-content: center; align-items: center;
+            font-weight: bold; font-size: 1.2em; color: white; text-shadow: 1px 1px 2px black;
+            transition: transform 0.2s;">
+            ${i + 1}
+        </div>`;
+    }
+    
+    html += `</div><button onclick="document.getElementById('panel-estrellas').remove()" style="margin-top:30px; padding:10px 20px; cursor:pointer;">Cerrar</button>`;
+    
+    overlay.innerHTML = html;
+    document.body.appendChild(overlay);
+};
+window.lanzarCuestionario = function(num, el) {
+    const links = {
+        1: "https://gemini.google.com/share/cae4fdd19682",
+        2: "https://gemini.google.com/share/5a1c216856ac",
+        3: "https://gemini.google.com/share/b76f77c2fcc1",
+        4: "https://gemini.google.com/share/c64827a67672"
+    };
+
+    // 1. Registro inicial (AQUÍ ESTÁ EL CAMBIO)
+    registrarActividadAuto(num, "INICIO_CUESTIONARIO");
+
+    // 2. Efecto visual
+    el.style.boxShadow = "0 0 25px 10px #00FF00";
+    el.style.transform = "scale(1.1)";
+    
+    setTimeout(() => {
+        if(links[num]) {
+            window.open(links[num], '_blank');
+            // 3. Solicitamos la reflexión tras 5 segundos
+            setTimeout(() => solicitarReflexion(num), 5000); 
+        }
+        el.style.boxShadow = "none";
+        el.style.transform = "scale(1)";
+    }, 300);
+};
+
+window.solicitarReflexion = function(num) {
+    // Creamos el modal de reflexión
+    const modal = document.createElement('div');
+    modal.id = "modal-reflexion";
+    modal.style = "position:fixed; bottom:20px; right:20px; background:#fff; padding:20px; border:2px solid #c5a059; border-radius:10px; z-index:10000; box-shadow: 0 0 10px rgba(0,0,0,0.5);";
+    modal.innerHTML = `
+        <p><strong>Clínica de la Convergencia</strong><br>¿Cómo integras el Eje ${num} en tu práctica?</p>
+        <textarea id="reflexion-text" style="width:100%; height:60px;"></textarea><br>
+        <button onclick="enviarReflexion(${num})" style="margin-top:10px;">Enviar Reflexión</button>
+    `;
+    document.body.appendChild(modal);
+};
+
+window.enviarReflexion = function(num) {
+    const texto = document.getElementById('reflexion-text').value;
+    registrarActividadAuto(num, "REFLEXION", texto);
+    alert("¡Registro guardado con éxito!");
+    document.getElementById('modal-reflexion').remove();
+};
+window.registrarActividadAuto = function(eje, accion, textoReflexion = "") {
+    // Obtenemos los registros actuales (o creamos un array vacío si es la primera vez)
+    let logs = JSON.parse(localStorage.getItem('logs_autoaprendizaje')) || [];
+    
+    const nuevoRegistro = {
+        dni: sesion.dni,
+        fecha: new Date().toLocaleString(),
+        eje: eje,
+        accion: accion,
+        reflexion: textoReflexion
+    };
+    
+    logs.push(nuevoRegistro);
+    
+    // Guardamos de nuevo en localStorage
+    localStorage.setItem('logs_autoaprendizaje', JSON.stringify(logs));
+    console.log("Registro guardado localmente:", nuevoRegistro);
+};
+window.vAuditoriaAutoaprendizaje = function() {
+    // Intentamos encontrar el contenedor principal por varios nombres comunes
+    const m = document.getElementById('main-content') || 
+              document.getElementById('contenido') || 
+              document.querySelector('.content') || 
+              document.querySelector('main');
+    
+    if (!m) {
+        alert("Error: No encontré el contenedor de la pantalla. ¿Cómo se llama el div donde aparecen tus listados?");
+        return;
+    }
+
+    const logs = JSON.parse(localStorage.getItem('logs_autoaprendizaje')) || [];
+    
+    let html = `<h2>📈 Auditoría de Autoaprendizaje</h2>
+                <table border="1" style="width:100%; border-collapse: collapse; margin-top: 15px;">
+                    <tr style="background:#eee;">
+                        <th>DNI</th><th>Eje</th><th>Acción</th><th>Reflexión</th><th>Fecha</th>
+                    </tr>`;
+    
+    logs.forEach(l => {
+        html += `<tr>
+                    <td>${l.dni}</td><td>${l.eje}</td><td>${l.accion}</td>
+                    <td>${l.reflexion}</td><td>${l.fecha}</td>
+                 </tr>`;
+    });
+    
+    html += "</table>";
+    m.innerHTML = html;
+};
+
+window.registrarActividadAuto = function(eje, accion, textoReflexion = "") {
+    let logs = JSON.parse(localStorage.getItem('logs_autoaprendizaje')) || [];
+    logs.push({
+        dni: sesion ? sesion.dni : "Invitado",
+        fecha: new Date().toLocaleString(),
+        eje: eje,
+        accion: accion,
+        reflexion: textoReflexion
+    });
+    localStorage.setItem('logs_autoaprendizaje', JSON.stringify(logs));
+};
+window.vAuditoriaAutoaprendizaje = function() {
+    // Corregido: ahora busca 'main-view' en lugar de 'main-content'
+    const m = document.getElementById('main-view');
+    
+    if (!m) {
+        console.error("Error: No se encontró el contenedor 'main-view'.");
+        return;
+    }
+
+    const logs = JSON.parse(localStorage.getItem('logs_autoaprendizaje')) || [];
+    
+    let html = `<h2>📈 Auditoría de Autoaprendizaje</h2>
+                <div style="overflow-x:auto;">
+                <table border="1" style="width:100%; border-collapse: collapse; margin-top: 15px;">
+                    <tr style="background:#eee;">
+                        <th style="padding:8px;">DNI</th>
+                        <th style="padding:8px;">Eje</th>
+                        <th style="padding:8px;">Acción</th>
+                        <th style="padding:8px;">Reflexión</th>
+                        <th style="padding:8px;">Fecha</th>
+                    </tr>`;
+    
+    if(logs.length === 0) {
+        html += `<tr><td colspan="5" style="padding:10px;">No hay datos registrados aún.</td></tr>`;
+    } else {
+        logs.forEach(l => {
+            html += `<tr>
+                        <td style="padding:8px;">${l.dni}</td>
+                        <td style="padding:8px;">${l.eje}</td>
+                        <td style="padding:8px;">${l.accion}</td>
+                        <td style="padding:8px;">${l.reflexion}</td>
+                        <td style="padding:8px;">${l.fecha}</td>
+                     </tr>`;
+        });
+    }
+    
+    html += "</table></div>";
+    m.innerHTML = html;
+};
+
+window.vEmisionDiplomas = function() {
+    const v = document.getElementById('main-view');
+    let html = `
+        <h3 class="mb-4">🎓 EMISIÓN DE DIPLOMAS</h3>
+        <button class="btn btn-secondary mb-3" onclick="vHome()">⬅️ Volver</button>
+        <table class="table table-striped table-hover bg-white shadow-sm">
+            <thead class="table-dark">
+                <tr>
+                    <th>Apellido y Nombres / DNI</th>
+                    <th>Drive</th>
+                    <th>Finalizado</th>
+                </tr>
+            </thead>
+            <tbody>`;
+
+    db.participantes.forEach(est => {
+        // Asegúrate de que est.driveFolder exista en tu objeto participante
+        const link = est.driveFolder || '#'; 
+        
+        html += `<tr>
+            <td>${est.apellido}, ${est.nombre} <br><small class="text-muted">${est.dni}</small></td>
+            <td>
+                <button class="btn btn-sm" style="background-color: #c5a059; color: white;" 
+                        onclick="window.open('${link}', '_blank')">📂 Abrir Drive</button>
+            </td>
+           <td><input type="checkbox" ${JSON.parse(localStorage.getItem('diplomas_visados') || '{}')[est.dni] ? 'checked' : ''} 
+           onchange="guardarVisado('${est.dni}', this.checked)"></td>
+        </tr>`;
+    });
+
+    html += `</tbody></table>`;
+    v.innerHTML = html;
+};
+window.guardarVisado = function(dni, estaTildado) {
+    let visados = JSON.parse(localStorage.getItem('diplomas_visados') || '{}');
+    visados[dni] = estaTildado;
+    localStorage.setItem('diplomas_visados', JSON.stringify(visados));
+};
+// Generación automática del mapa de diplomas basada en la base de datos
+window.mapaDiplomas = {};
+if (typeof db !== 'undefined' && db.participantes) {
+    db.participantes.forEach(p => {
+        if (p.dni) {
+            window.mapaDiplomas[String(p.dni)] = p.driveFolder || "";
+        }
+    });
+}
+console.log("Mapa de Diplomas cargado:", window.mapaDiplomas);
+window.vMostrarFormularioDiploma = function() {
+    const v = document.getElementById('main-view');
+    const estados = JSON.parse(localStorage.getItem('participantes_db') || '{}');
+    const dniAlumno = String(sesion.dni || "");
+    const linkDiploma = (typeof window.mapaDiplomas !== 'undefined') ? window.mapaDiplomas[dniAlumno] : null;
+    const estaVisado = (estados[dniAlumno] === true);
+
+    let html = `<div class="p-4"><button class="btn btn-secondary mb-3" onclick="vHome()">⬅️ Volver</button><h3>🎓 DIPLOMA OFICIAL</h3><hr>`;
+
+    if (estaVisado && linkDiploma) {
+        html += `
+            <div style="text-align: center; margin-top: 30px;">
+                <p>¡Felicidades! Tu diploma está listo:</p>
+                <img src="miniaturacert.jpg" 
+                     onclick="window.open('${linkDiploma}', '_blank')" 
+                     style="width: 200px; cursor: pointer; border: 3px solid #C5A059; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);"
+                     title="Haz clic para ver tu diploma">
+                <p style="margin-top: 10px; font-size: 0.8em; color: #666;">Haz clic sobre la imagen para abrir tu carpeta de Drive</p>
+            </div>`;
+    } else {
+        html += `<div class="alert alert-warning">⚠️ Aún no tienes un diploma emitido o el proceso de visado no ha finalizado. Por favor, contacta con administración.</div>`;
+    }
+    
+    v.innerHTML = html + `</div>`;
+};
+
+// Este script espera a cualquier cambio en el menú y asegura que el botón esté presente
+const observer = new MutationObserver((mutations) => {
+    const m = document.getElementById('menu-side');
+    if (m && !document.getElementById('btn-diploma-custom')) {
+        const btn = document.createElement('div');
+        btn.id = 'btn-diploma-custom';
+        btn.className = "nav-link";
+        btn.style.color = "#c5a059";
+        btn.style.cursor = "pointer";
+        btn.style.fontWeight = "bold";
+        btn.innerHTML = "🎓 MI DIPLOMA";
+        btn.onclick = function() { vMostrarFormularioDiploma(); };
+        
+        // Lo insertamos antes de "Mis Mensajes" si existe, o al final
+        const mensajes = Array.from(m.querySelectorAll('.nav-link')).find(el => el.innerText.includes('Mis Mensajes'));
+        if (mensajes) {
+            m.insertBefore(btn, mensajes);
+        } else {
+            m.appendChild(btn);
+        }
+    }
+});
+
+// Observamos el menú para ver si cambia
+const menuElement = document.getElementById('menu-side');
+if (menuElement) {
+    observer.observe(menuElement, { childList: true, subtree: true });
+}
+// 1. Función para mostrar el Centro de Recreación
+window.vMostrarCentroRecreativo = function() {
+    const v = document.getElementById('main-view');
+    
+    // Lista de juegos
+    const juegos = {
+        'Pacman': 'https://drrubenmpereyra-stack.github.io/Pacman-convergencia/',
+        'Tetris': 'https://drrubenmpereyra-stack.github.io/Teris-converencia/',
+        'Ruleta': 'https://drrubenmpereyra-stack.github.io/Ruleta-convergencia/',
+        'Batalla': 'https://drrubenmpereyra-stack.github.io/Batalla-naval-convergencia/'
+    };
+
+    v.innerHTML = `
+        <div class="p-4">
+            <button class="btn btn-secondary mb-3" onclick="vHome()">⬅️ Volver al Dashboard</button>
+            <h3>🎮 Centro de Recreación</h3>
+            <hr>
+            <div style="display: flex; gap: 30px; justify-content: center; flex-wrap: wrap; margin-top: 30px;">
+                ${Object.keys(juegos).map(nombre => `
+                    <div onclick="cargarJuegoEnIframe('${juegos[nombre]}')" style="cursor:pointer; text-align:center; width: 150px;">
+                        <img src="${nombre}.jpg" style="width: 150px; height: 150px; object-fit: cover; border-radius: 15px; border: 3px solid #27ae60;">
+                        <p style="margin-top:10px; font-weight:bold;">${nombre === 'Batalla' ? 'Batalla Naval' : nombre}</p>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+        <div id="container-juego" style="display:none; padding-top:20px;">
+            <button class="btn btn-warning mb-2" onclick="vMostrarCentroRecreativo()">⬅️ Volver al Centro</button>
+            <div style="width:100%; height:75vh; background:#000; border-radius:10px; overflow:hidden;">
+                <iframe id="iframe-juego" src="" style="width:100%; height:100%; border:none;"></iframe>
+            </div>
+        </div>`;
+};
+
+// Nueva función auxiliar para cargar el juego en el iframe sin salir del aula
+window.cargarJuegoEnIframe = function(url) {
+    document.getElementById('iframe-juego').src = url;
+    document.getElementById('container-juego').style.display = 'block';
+    // Ocultar la lista de juegos para que solo se vea el iframe
+    document.querySelector('.p-4 > div:not(#container-juego)').style.display = 'none';
+};
+
+// 2. Función para lanzar el juego dentro del iframe
+window.lanzarJuego = function(nombreJuego) {
+    const v = document.getElementById('main-view');
+    const urlsJuegos = {
+        'Pacman': 'https://drrubenmpereyra-stack.github.io/Pacman-convergencia/',
+        'Tetris': 'https://drrubenmpereyra-stack.github.io/Teris-converencia/',
+        'Ruleta': 'https://drrubenmpereyra-stack.github.io/Ruleta-convergencia/'
+    };
+
+    v.innerHTML = `
+        <div class="p-3">
+            <button class="btn btn-warning mb-2" onclick="vMostrarCentroRecreativo()">⬅️ Volver al Centro</button>
+            <div style="width:100%; height:80vh; background:#000; border-radius: 10px; overflow:hidden;">
+                <iframe src="${urlsJuegos[nombreJuego]}" style="width:100%; height:100%; border:none;" title="Juego"></iframe>
+            </div>
+        </div>`;
+};
+
+// 3. El Escolta (MutationObserver) para insertar el botón en el menú
+const observerRecreacion = new MutationObserver((mutations) => {
+    const m = document.getElementById('menu-side');
+    if (m && !document.getElementById('btn-recreacion')) {
+        const btnRec = document.createElement('div');
+        btnRec.id = 'btn-recreacion';
+        btnRec.className = "nav-link";
+        btnRec.style.color = "#27ae60"; 
+        btnRec.style.cursor = "pointer";
+        btnRec.style.fontWeight = "bold";
+        btnRec.style.padding = "10px";
+        btnRec.innerHTML = "🎮 Actividades Recreativas";
+        btnRec.onclick = function() { vMostrarCentroRecreativo(); };
+        m.appendChild(btnRec);
+    }
+});
+const menuSide = document.getElementById('menu-side');
+if (menuSide) observerRecreacion.observe(menuSide, { childList: true, subtree: true });
+
 </script>
 </body>
 
