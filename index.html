@@ -268,18 +268,18 @@ function ejecutarLogin() {
 window.renderMenu = function() {
     const m = document.getElementById('menu-side');
     const isA = (sesion.rol === 'ADM');
-
+    
+    // ... (Tu lógica de badge y variables iniciales igual que la tenías)
     const estados = JSON.parse(localStorage.getItem('participantes_db') || '{}');
     const dniAlumno = String(sesion.dni || "");
-    const tieneVisado = (estados[dniAlumno] === true);
-    const linkDiploma = (typeof window.mapaDiplomas !== 'undefined') ? window.mapaDiplomas[dniAlumno] : null;
-
+    
     let badge = '';
     if (!isA) {
-        const nuevosMensajes = (db.mensajes || []).filter(m => (m.destino === 'TODOS' || m.destino === sesion.dni) && !m.leido).length;
+        const nuevosMensajes = (db.mensajes || []).filter(msg => (msg.destino === 'TODOS' || msg.destino === sesion.dni) && !msg.leido).length;
         if (nuevosMensajes > 0) badge = `<span style="background:red; color:white; border-radius:50%; padding:2px 8px; font-size:10px; margin-left:5px;">${nuevosMensajes}</span>`;
     }
 
+    // Menú base con la llamada directa a la función externa
     let h = `<div class="nav-link" onclick="vHome()">🏠 Inicio / Dashboard</div>
              <div class="nav-link" onclick="vEncs()">📅 Encuentros</div>
              <div class="nav-link" onclick="vTals()">🏫 Talleres</div>
@@ -288,7 +288,7 @@ window.renderMenu = function() {
              <div class="nav-link" onclick="vMostrarCentroRecreativo()" style="color: #27ae60; cursor: pointer; font-weight: bold;">🎮 Actividades Recreativas</div>
              <hr>`;
 
-    if(!isA) {
+    if (!isA) {
         h += `<div class="nav-link" onclick="vTestsAlumno()">📝 Mis Tests</div>
               <div class="nav-link" onclick="abrirPanelEstrellas()" style="color: #f1c40f; cursor: pointer; font-weight: bold; text-shadow: 0 0 5px #f1c40f;">⭐ Autoaprendizaje</div>
               <div class="nav-link" onclick="vPagosAlumnoView()">💰 Mis Pagos</div>
@@ -2901,7 +2901,7 @@ if (menuElement) {
 window.vMostrarCentroRecreativo = function() {
     const v = document.getElementById('main-view');
     
-    // Lista completa de juegos (8 en total)
+    // Lista de juegos
     const juegos = {
         'Pacman': 'https://drrubenmpereyra-stack.github.io/Pacman-convergencia/',
         'Tetris': 'https://drrubenmpereyra-stack.github.io/Teris-converencia/',
@@ -2913,38 +2913,47 @@ window.vMostrarCentroRecreativo = function() {
         'Triage': 'https://drrubenmpereyra-stack.github.io/Trige-de-la-convergencia/'
     };
 
-    // Mapeo de nombres para mostrar etiquetas amigables
     const etiquetas = {
-        'Pacman': 'Pacman',
-        'Tetris': 'Tetris',
-        'Ruleta': 'Ruleta',
-        'Batalla': 'Batalla Naval',
-        'Tejedor': 'Tejedor de Circuitos',
-        'Detectives': 'Detectives de la Mente',
-        'Cartografo': 'Cartógrafo del Sujeto',
-        'Triage': 'Triage de la Convergencia'
+        'Pacman':'Pacman', 'Tetris':'Tetris', 'Ruleta':'Ruleta', 'Batalla':'Batalla Naval',
+        'Tejedor':'Tejedor de Circuitos', 'Detectives':'Detectives Mente', 'Cartografo':'Cartógrafo', 'Triage':'Triage'
     };
 
-    v.innerHTML = `
-        <div class="p-4">
+    // Renderizamos la vista de selección
+    let html = `
+        <div class="p-4" id="view-lista-juegos">
             <button class="btn btn-secondary mb-3" onclick="vHome()">⬅️ Volver al Dashboard</button>
             <h3>🎮 Centro de Recreación</h3>
             <hr>
-            <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-top: 30px;">
-                ${Object.keys(juegos).map(nombre => `
-                    <div onclick="cargarJuegoEnIframe('${juegos[nombre]}')" style="cursor:pointer; text-align:center; width: 140px;">
-                        <img src="${nombre}.jpg" style="width: 140px; height: 140px; object-fit: cover; border-radius: 15px; border: 3px solid #27ae60;">
-                        <p style="margin-top:10px; font-weight:bold; font-size: 14px;">${etiquetas[nombre]}</p>
-                    </div>
-                `).join('')}
-            </div>
-        </div>
-        <div id="container-juego" style="display:none; padding-top:20px;">
-            <button class="btn btn-warning mb-2" onclick="vMostrarCentroRecreativo()">⬅️ Volver al Centro</button>
-            <div style="width:100%; height:75vh; background:#000; border-radius:10px; overflow:hidden;">
-                <iframe id="iframe-juego" src="" style="width:100%; height:100%; border:none;"></iframe>
-            </div>
-        </div>`;
+            <div style="display:flex; gap:15px; flex-wrap:wrap; justify-content:center;">`;
+    
+    for(let j in juegos) {
+        html += `
+            <div onclick="cargarJuegoEnIframe('${juegos[j]}')" style="cursor:pointer; text-align:center; width:120px;">
+                <img src="${j}.jpg" style="width:100px; height:100px; border-radius:10px; border:2px solid #27ae60;">
+                <p style="font-size:12px; margin-top:5px; font-weight:bold;">${etiquetas[j]}</p>
+            </div>`;
+    }
+    
+    html += `</div></div>
+             <div id="container-juego" style="display:none; padding-top:20px;">
+                <button class="btn btn-warning mb-2" onclick="volverALista()">⬅️ Volver al Centro</button>
+                <div style="width:100%; height:75vh; background:#000; border-radius:10px; overflow:hidden;">
+                    <iframe id="iframe-juego" src="" style="width:100%; height:100%; border:none;"></iframe>
+                </div>
+             </div>`;
+    v.innerHTML = html;
+};
+
+window.cargarJuegoEnIframe = function(url) {
+    document.getElementById('view-lista-juegos').style.display = 'none';
+    document.getElementById('container-juego').style.display = 'block';
+    document.getElementById('iframe-juego').src = url;
+};
+
+window.volverALista = function() {
+    document.getElementById('container-juego').style.display = 'none';
+    document.getElementById('iframe-juego').src = ''; // Limpiamos para ahorrar memoria
+    document.getElementById('view-lista-juegos').style.display = 'block';
 };
 // 2. Función para lanzar el juego dentro del iframe
 window.lanzarJuego = function(nombreJuego) {
