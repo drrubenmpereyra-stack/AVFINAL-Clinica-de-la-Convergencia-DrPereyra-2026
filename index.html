@@ -2901,12 +2901,28 @@ if (menuElement) {
 window.vMostrarCentroRecreativo = function() {
     const v = document.getElementById('main-view');
     
-    // Lista de juegos
+    // Lista completa de juegos (8 en total)
     const juegos = {
         'Pacman': 'https://drrubenmpereyra-stack.github.io/Pacman-convergencia/',
         'Tetris': 'https://drrubenmpereyra-stack.github.io/Teris-converencia/',
         'Ruleta': 'https://drrubenmpereyra-stack.github.io/Ruleta-convergencia/',
-        'Batalla': 'https://drrubenmpereyra-stack.github.io/Batalla-naval-convergencia/'
+        'Batalla': 'https://drrubenmpereyra-stack.github.io/Batalla-naval-convergencia/',
+        'Tejedor': 'https://drrubenmpereyra-stack.github.io/tejedor-de-circuitos/',
+        'Detectives': 'https://drrubenmpereyra-stack.github.io/Detectives-de-la-mente/',
+        'Cartografo': 'https://drrubenmpereyra-stack.github.io/Cartografo-del-sujeto/',
+        'Triage': 'https://drrubenmpereyra-stack.github.io/Trige-de-la-convergencia/'
+    };
+
+    // Mapeo de nombres para mostrar etiquetas amigables
+    const etiquetas = {
+        'Pacman': 'Pacman',
+        'Tetris': 'Tetris',
+        'Ruleta': 'Ruleta',
+        'Batalla': 'Batalla Naval',
+        'Tejedor': 'Tejedor de Circuitos',
+        'Detectives': 'Detectives de la Mente',
+        'Cartografo': 'Cartógrafo del Sujeto',
+        'Triage': 'Triage de la Convergencia'
     };
 
     v.innerHTML = `
@@ -2914,11 +2930,11 @@ window.vMostrarCentroRecreativo = function() {
             <button class="btn btn-secondary mb-3" onclick="vHome()">⬅️ Volver al Dashboard</button>
             <h3>🎮 Centro de Recreación</h3>
             <hr>
-            <div style="display: flex; gap: 30px; justify-content: center; flex-wrap: wrap; margin-top: 30px;">
+            <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-top: 30px;">
                 ${Object.keys(juegos).map(nombre => `
-                    <div onclick="cargarJuegoEnIframe('${juegos[nombre]}')" style="cursor:pointer; text-align:center; width: 150px;">
-                        <img src="${nombre}.jpg" style="width: 150px; height: 150px; object-fit: cover; border-radius: 15px; border: 3px solid #27ae60;">
-                        <p style="margin-top:10px; font-weight:bold;">${nombre === 'Batalla' ? 'Batalla Naval' : nombre}</p>
+                    <div onclick="cargarJuegoEnIframe('${juegos[nombre]}')" style="cursor:pointer; text-align:center; width: 140px;">
+                        <img src="${nombre}.jpg" style="width: 140px; height: 140px; object-fit: cover; border-radius: 15px; border: 3px solid #27ae60;">
+                        <p style="margin-top:10px; font-weight:bold; font-size: 14px;">${etiquetas[nombre]}</p>
                     </div>
                 `).join('')}
             </div>
@@ -2930,15 +2946,6 @@ window.vMostrarCentroRecreativo = function() {
             </div>
         </div>`;
 };
-
-// Nueva función auxiliar para cargar el juego en el iframe sin salir del aula
-window.cargarJuegoEnIframe = function(url) {
-    document.getElementById('iframe-juego').src = url;
-    document.getElementById('container-juego').style.display = 'block';
-    // Ocultar la lista de juegos para que solo se vea el iframe
-    document.querySelector('.p-4 > div:not(#container-juego)').style.display = 'none';
-};
-
 // 2. Función para lanzar el juego dentro del iframe
 window.lanzarJuego = function(nombreJuego) {
     const v = document.getElementById('main-view');
