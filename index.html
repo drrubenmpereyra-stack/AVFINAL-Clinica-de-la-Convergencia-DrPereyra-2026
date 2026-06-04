@@ -2898,6 +2898,8 @@ if (menuElement) {
     observer.observe(menuElement, { childList: true, subtree: true });
 }
 // 1. Función para mostrar el Centro de Recreación
+
+
 window.vMostrarCentroRecreativo = function() {
     const v = document.getElementById('main-view');
     
@@ -2914,63 +2916,30 @@ window.vMostrarCentroRecreativo = function() {
     };
 
     const etiquetas = {
-        'Pacman':'Pacman', 'Tetris':'Tetris', 'Ruleta':'Ruleta', 'Batalla':'Batalla Naval',
-        'Tejedor':'Tejedor de Circuitos', 'Detectives':'Detectives Mente', 'Cartografo':'Cartógrafo', 'Triage':'Triage'
+        'Pacman': 'Pacman', 'Tetris': 'Tetris', 'Ruleta': 'Ruleta', 
+        'Batalla': 'Batalla Naval', 'Tejedor': 'Tejedor de Circuitos', 
+        'Detectives': 'Detectives de la Mente', 'Cartografo': 'Cartógrafo del Sujeto', 
+        'Triage': 'Triage de la Convergencia'
     };
 
-    // Renderizamos la vista de selección
     let html = `
-        <div class="p-4" id="view-lista-juegos">
+        <div class="p-4">
             <button class="btn btn-secondary mb-3" onclick="vHome()">⬅️ Volver al Dashboard</button>
             <h3>🎮 Centro de Recreación</h3>
+            <p>Selecciona un juego para abrirlo en una ventana externa:</p>
             <hr>
-            <div style="display:flex; gap:15px; flex-wrap:wrap; justify-content:center;">`;
+            <div style="display:flex; gap:20px; flex-wrap:wrap; justify-content:center; margin-top: 20px;">`;
     
     for(let j in juegos) {
         html += `
-            <div onclick="cargarJuegoEnIframe('${juegos[j]}')" style="cursor:pointer; text-align:center; width:120px;">
-                <img src="${j}.jpg" style="width:100px; height:100px; border-radius:10px; border:2px solid #27ae60;">
-                <p style="font-size:12px; margin-top:5px; font-weight:bold;">${etiquetas[j]}</p>
+            <div onclick="window.open('${juegos[j]}', '_blank')" style="cursor:pointer; text-align:center; width:140px;">
+                <img src="${j}.jpg" style="width:140px; height:140px; object-fit:cover; border-radius:15px; border:3px solid #27ae60;">
+                <p style="margin-top:10px; font-weight:bold; font-size:14px;">${etiquetas[j]}</p>
             </div>`;
     }
     
-    html += `</div></div>
-             <div id="container-juego" style="display:none; padding-top:20px;">
-                <button class="btn btn-warning mb-2" onclick="volverALista()">⬅️ Volver al Centro</button>
-                <div style="width:100%; height:75vh; background:#000; border-radius:10px; overflow:hidden;">
-                    <iframe id="iframe-juego" src="" style="width:100%; height:100%; border:none;"></iframe>
-                </div>
-             </div>`;
+    html += `</div></div>`;
     v.innerHTML = html;
-};
-
-window.cargarJuegoEnIframe = function(url) {
-    document.getElementById('view-lista-juegos').style.display = 'none';
-    document.getElementById('container-juego').style.display = 'block';
-    document.getElementById('iframe-juego').src = url;
-};
-
-window.volverALista = function() {
-    document.getElementById('container-juego').style.display = 'none';
-    document.getElementById('iframe-juego').src = ''; // Limpiamos para ahorrar memoria
-    document.getElementById('view-lista-juegos').style.display = 'block';
-};
-// 2. Función para lanzar el juego dentro del iframe
-window.lanzarJuego = function(nombreJuego) {
-    const v = document.getElementById('main-view');
-    const urlsJuegos = {
-        'Pacman': 'https://drrubenmpereyra-stack.github.io/Pacman-convergencia/',
-        'Tetris': 'https://drrubenmpereyra-stack.github.io/Teris-converencia/',
-        'Ruleta': 'https://drrubenmpereyra-stack.github.io/Ruleta-convergencia/'
-    };
-
-    v.innerHTML = `
-        <div class="p-3">
-            <button class="btn btn-warning mb-2" onclick="vMostrarCentroRecreativo()">⬅️ Volver al Centro</button>
-            <div style="width:100%; height:80vh; background:#000; border-radius: 10px; overflow:hidden;">
-                <iframe src="${urlsJuegos[nombreJuego]}" style="width:100%; height:100%; border:none;" title="Juego"></iframe>
-            </div>
-        </div>`;
 };
 
 // 3. El Escolta (MutationObserver) para insertar el botón en el menú
@@ -2991,6 +2960,7 @@ const observerRecreacion = new MutationObserver((mutations) => {
 });
 const menuSide = document.getElementById('menu-side');
 if (menuSide) observerRecreacion.observe(menuSide, { childList: true, subtree: true });
+
 
 </script>
 </body>
