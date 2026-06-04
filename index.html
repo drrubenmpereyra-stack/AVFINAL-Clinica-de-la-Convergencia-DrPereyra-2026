@@ -267,19 +267,15 @@ function ejecutarLogin() {
 }
 window.renderMenu = function() {
     const m = document.getElementById('menu-side');
+    if (!m) return;
     const isA = (sesion.rol === 'ADM');
-    
-    // ... (Tu lógica de badge y variables iniciales igual que la tenías)
-    const estados = JSON.parse(localStorage.getItem('participantes_db') || '{}');
-    const dniAlumno = String(sesion.dni || "");
-    
+
     let badge = '';
     if (!isA) {
         const nuevosMensajes = (db.mensajes || []).filter(msg => (msg.destino === 'TODOS' || msg.destino === sesion.dni) && !msg.leido).length;
         if (nuevosMensajes > 0) badge = `<span style="background:red; color:white; border-radius:50%; padding:2px 8px; font-size:10px; margin-left:5px;">${nuevosMensajes}</span>`;
     }
 
-    // Menú base con la llamada directa a la función externa
     let h = `<div class="nav-link" onclick="vHome()">🏠 Inicio / Dashboard</div>
              <div class="nav-link" onclick="vEncs()">📅 Encuentros</div>
              <div class="nav-link" onclick="vTals()">🏫 Talleres</div>
@@ -2845,61 +2841,26 @@ if (typeof db !== 'undefined' && db.participantes) {
 console.log("Mapa de Diplomas cargado:", window.mapaDiplomas);
 window.vMostrarFormularioDiploma = function() {
     const v = document.getElementById('main-view');
-    const estados = JSON.parse(localStorage.getItem('participantes_db') || '{}');
-    const dniAlumno = String(sesion.dni || "");
-    const linkDiploma = (typeof window.mapaDiplomas !== 'undefined') ? window.mapaDiplomas[dniAlumno] : null;
-    const estaVisado = (estados[dniAlumno] === true);
-
-    let html = `<div class="p-4"><button class="btn btn-secondary mb-3" onclick="vHome()">⬅️ Volver</button><h3>🎓 DIPLOMA OFICIAL</h3><hr>`;
-
-    if (estaVisado && linkDiploma) {
+    const visados = JSON.parse(localStorage.getItem('diplomas_visados') || '{}');
+    const esVisado = (visados[String(sesion.dni)] === true);
+    
+    let html = `<h3>🎓 Mi Diploma</h3>`;
+    
+    if (esVisado) {
         html += `
-            <div style="text-align: center; margin-top: 30px;">
-                <p>¡Felicidades! Tu diploma está listo:</p>
-                <img src="miniaturacert.jpg" 
-                     onclick="window.open('${linkDiploma}', '_blank')" 
-                     style="width: 200px; cursor: pointer; border: 3px solid #C5A059; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);"
-                     title="Haz clic para ver tu diploma">
-                <p style="margin-top: 10px; font-size: 0.8em; color: #666;">Haz clic sobre la imagen para abrir tu carpeta de Drive</p>
-            </div>`;
+        <div class="text-center p-4">
+            <p>Tu diploma ha sido visado. Haz clic en la miniatura para acceder a la carpeta:</p>
+            <img src="miniaturacert.jpg" 
+                 style="width: 200px; cursor: pointer; border: 3px solid #c5a059; border-radius: 10px;" 
+                 onclick="window.open('${window.mapaDiplomas[String(sesion.dni)] || '#'}', '_blank')"
+                 title="Abrir carpeta de Google Drive">
+        </div>`;
     } else {
-        html += `<div class="alert alert-warning">⚠️ Aún no tienes un diploma emitido o el proceso de visado no ha finalizado. Por favor, contacta con administración.</div>`;
+        html += `<p class="alert alert-warning">El diploma aún no está disponible. Por favor, contacta con la administración.</p>`;
     }
     
-    v.innerHTML = html + `</div>`;
+    v.innerHTML = html;
 };
-
-// Este script espera a cualquier cambio en el menú y asegura que el botón esté presente
-const observer = new MutationObserver((mutations) => {
-    const m = document.getElementById('menu-side');
-    if (m && !document.getElementById('btn-diploma-custom')) {
-        const btn = document.createElement('div');
-        btn.id = 'btn-diploma-custom';
-        btn.className = "nav-link";
-        btn.style.color = "#c5a059";
-        btn.style.cursor = "pointer";
-        btn.style.fontWeight = "bold";
-        btn.innerHTML = "🎓 MI DIPLOMA";
-        btn.onclick = function() { vMostrarFormularioDiploma(); };
-        
-        // Lo insertamos antes de "Mis Mensajes" si existe, o al final
-        const mensajes = Array.from(m.querySelectorAll('.nav-link')).find(el => el.innerText.includes('Mis Mensajes'));
-        if (mensajes) {
-            m.insertBefore(btn, mensajes);
-        } else {
-            m.appendChild(btn);
-        }
-    }
-});
-
-// Observamos el menú para ver si cambia
-const menuElement = document.getElementById('menu-side');
-if (menuElement) {
-    observer.observe(menuElement, { childList: true, subtree: true });
-}
-// 1. Función para mostrar el Centro de Recreación
-
-
 window.vMostrarCentroRecreativo = function() {
     const v = document.getElementById('main-view');
     
@@ -2958,8 +2919,28 @@ const observerRecreacion = new MutationObserver((mutations) => {
         m.appendChild(btnRec);
     }
 });
+const observerDiploma = new MutationObserver((mutations) => {
+    const m = document.getElementById('menu-side');
+    if (m && sesion && sesion.rol !== 'ADM' && !document.getElementById('btn-mi-diploma-custom')) {
+        const btn = document.createElement('div');
+        btn.id = 'btn-mi-diploma-custom';
+        btn.className = "nav-link";
+        btn.style.color = "#c5a059";
+        btn.style.cursor = "pointer";
+        btn.style.fontWeight = "bold";
+        btn.innerHTML = "🎓 MI DIPLOMA";
+        btn.onclick = function() { vMostrarFormularioDiploma(); };
+        
+        // Insertamos antes de "Mis Mensajes"
+        const mensajes = Array.from(m.querySelectorAll('.nav-link')).find(el => el.innerText.includes('Mis Mensajes'));
+        if (mensajes) m.insertBefore(btn, mensajes);
+        else m.appendChild(btn);
+    }
+});
 const menuSide = document.getElementById('menu-side');
-if (menuSide) observerRecreacion.observe(menuSide, { childList: true, subtree: true });
+if (menuSide) observerDiploma.observe(menuSide, { childList: true, subtree: true });
+
+
 
 
 </script>
