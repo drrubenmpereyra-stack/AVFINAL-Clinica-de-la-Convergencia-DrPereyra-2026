@@ -2647,14 +2647,16 @@ window.abrirPanelEstrellas = function() {
     document.body.appendChild(overlay);
 };
 window.lanzarCuestionario = function(num, el) {
+    // Enlaces oficiales vía GitHub Pages
     const links = {
-        1: "https://gemini.google.com/share/cae4fdd19682",
-        2: "https://gemini.google.com/share/5a1c216856ac",
-        3: "https://gemini.google.com/share/b76f77c2fcc1",
-        4: "https://gemini.google.com/share/c64827a67672"
+        1: "https://drrubenmpereyra-stack.github.io/Cuestionario-1/",
+        2: "https://drrubenmpereyra-stack.github.io/Cuestionario-2/",
+        3: "https://drrubenmpereyra-stack.github.io/Cuestionario-3_1/",
+        4: "https://drrubenmpereyra-stack.github.io/Cuestionario-4/",
+        5: "https://drrubenmpereyra-stack.github.io/Cuestionario-5/"
     };
 
-    // 1. Registro inicial (AQUÍ ESTÁ EL CAMBIO)
+    // 1. Registro inicial
     registrarActividadAuto(num, "INICIO_CUESTIONARIO");
 
     // 2. Efecto visual
@@ -2663,15 +2665,20 @@ window.lanzarCuestionario = function(num, el) {
     
     setTimeout(() => {
         if(links[num]) {
+            // Abre el cuestionario en una ventana nueva
             window.open(links[num], '_blank');
+            
             // 3. Solicitamos la reflexión tras 5 segundos
             setTimeout(() => solicitarReflexion(num), 5000); 
+        } else {
+            console.error("Cuestionario no configurado: " + num);
         }
+        
+        // Retorno a la normalidad del botón
         el.style.boxShadow = "none";
         el.style.transform = "scale(1)";
     }, 300);
 };
-
 window.solicitarReflexion = function(num) {
     // Creamos el modal de reflexión
     const modal = document.createElement('div');
